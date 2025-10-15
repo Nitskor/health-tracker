@@ -150,38 +150,38 @@ export default function BloodPressurePage() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {/* Normal Readings Stats */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-blue-600 mb-4">Normal Readings</h3>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">Total Readings: {stats.normal.count}</p>
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-semibold text-blue-600 mb-2">Normal Readings</h3>
+              <div className="space-y-1">
+                <p className="text-xs text-gray-600">Last 30 days: {stats.normal.count}</p>
                 {stats.normal.count > 0 && (
                   <>
-                    <p className="text-sm text-gray-600">
-                      Average: {stats.normal.averageSystolic}/{stats.normal.averageDiastolic} mmHg
+                    <p className="text-sm font-medium text-gray-800">
+                      {stats.normal.averageSystolic}/{stats.normal.averageDiastolic} mmHg
                     </p>
-                    <div className="mt-2">
+                    <span className="text-xs text-gray-500">
                       {getBloodPressureCategory(stats.normal.averageSystolic, stats.normal.averageDiastolic).category}
-                    </div>
+                    </span>
                   </>
                 )}
               </div>
             </div>
 
             {/* After Activity Stats */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-purple-600 mb-4">After Activity</h3>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">Total Readings: {stats.afterActivity.count}</p>
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-semibold text-purple-600 mb-2">After Activity</h3>
+              <div className="space-y-1">
+                <p className="text-xs text-gray-600">Last 30 days: {stats.afterActivity.count}</p>
                 {stats.afterActivity.count > 0 && (
                   <>
-                    <p className="text-sm text-gray-600">
-                      Average: {stats.afterActivity.averageSystolic}/{stats.afterActivity.averageDiastolic} mmHg
+                    <p className="text-sm font-medium text-gray-800">
+                      {stats.afterActivity.averageSystolic}/{stats.afterActivity.averageDiastolic} mmHg
                     </p>
-                    <div className="mt-2">
+                    <span className="text-xs text-gray-500">
                       {getBloodPressureCategory(stats.afterActivity.averageSystolic, stats.afterActivity.averageDiastolic).category}
-                    </div>
+                    </span>
                   </>
                 )}
               </div>

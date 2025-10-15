@@ -13,21 +13,23 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'all'; // 'week', 'month', 'all'
+    const period = searchParams.get('period') || '30days'; // 'week', '30days', 'all'
 
     const db = await getDatabase();
     const collection = db.collection<BloodPressureReading>('blood_pressure');
 
-    // Calculate date filter based on period
+    // Calculate date filter based on period - default to 30 days
     let dateFilter = {};
     const now = new Date();
     
     if (period === 'week') {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       dateFilter = { timestamp: { $gte: weekAgo } };
-    } else if (period === 'month') {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      dateFilter = { timestamp: { $gte: monthAgo } };
+    } else if (period === '30days') {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      dateFilter = { timestamp: { $gte: thirtyDaysAgo } };
+    } else if (period === 'all') {
+      // No date filter for all-time
     }
 
     const query = { userId, ...dateFilter };

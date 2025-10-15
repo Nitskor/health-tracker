@@ -1,4 +1,5 @@
 import { SignedIn, SignedOut } from '@clerk/nextjs';
+import DashboardChart from '@/components/DashboardChart';
 
 export default function Home() {
   return (
@@ -54,26 +55,49 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Blood Pressure</h3>
               <p className="text-gray-600 text-sm mb-4">Track systolic and diastolic readings</p>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                Add Reading
-              </button>
+              <div className="space-y-2">
+                <a 
+                  href="/blood-pressure"
+                  className="block w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-center"
+                >
+                  View Tracker
+                </a>
+                <button className="w-full bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors">
+                  Quick Add
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Blood Sugar</h3>
               <p className="text-gray-600 text-sm mb-4">Monitor glucose levels</p>
-              <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
-                Add Reading
-              </button>
+              <div className="space-y-2">
+                <button className="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                  View Tracker
+                </button>
+                <button className="w-full bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 transition-colors">
+                  Quick Add
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Weight</h3>
               <p className="text-gray-600 text-sm mb-4">Track your weight over time</p>
-              <button className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
-                Add Reading
-              </button>
+              <div className="space-y-2">
+                <button className="w-full bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                  View Tracker
+                </button>
+                <button className="w-full bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 transition-colors">
+                  Quick Add
+                </button>
+              </div>
             </div>
+          </div>
+
+          {/* Charts Section */}
+          <div className="mb-8">
+            <DashboardChart />
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">

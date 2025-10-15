@@ -1,20 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { BloodPressureFormData, ReadingType } from '@/types/blood-pressure';
+import { BloodPressureFormData, ReadingType, BloodPressureReading } from '@/types/blood-pressure';
 
 interface BloodPressureFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  editingReading?: BloodPressureReading | null;
 }
 
-export default function BloodPressureForm({ onSuccess, onCancel }: BloodPressureFormProps) {
+export default function BloodPressureForm({ onSuccess, onCancel, editingReading }: BloodPressureFormProps) {
   const [formData, setFormData] = useState<BloodPressureFormData>({
-    systolic: 0,
-    diastolic: 0,
-    readingType: 'normal',
-    timestamp: new Date().toISOString().slice(0, 16), // Format for datetime-local input
-    notes: ''
+    systolic: editingReading?.systolic || 0,
+    diastolic: editingReading?.diastolic || 0,
+    readingType: editingReading?.readingType || 'normal',
+    timestamp: editingReading ? 
+      new Date(editingReading.timestamp).toLocaleString('sv-SE').slice(0, 16) : 
+      new Date().toLocaleString('sv-SE').slice(0, 16),
+    notes: editingReading?.notes || ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -25,30 +28,46 @@ export default function BloodPressureForm({ onSuccess, onCancel }: BloodPressure
     setError('');
 
     try {
-      const response = await fetch('/api/blood-pressure', {
-        method: 'POST',
+      const isEditing = !!editingReading;
+      const url = '/api/blood-pressure';
+      const method = isEditing ? 'PUT' : 'POST';
+      
+      if (isEditing && !editingReading._id) {
+        throw new Error('Reading ID is missing');
+      }
+      
+      const body = isEditing 
+        ? { id: editingReading._id, ...formData }
+        : formData;
+
+      console.log('Submitting form:', { isEditing, body, editingReading });
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save reading');
+        throw new Error(errorData.error || `Failed to ${isEditing ? 'update' : 'save'} reading`);
       }
 
       const result = await response.json();
-      console.log('Blood pressure reading saved:', result);
+      console.log(`Blood pressure reading ${isEditing ? 'updated' : 'saved'}:`, result);
       
-      // Reset form
-      setFormData({
-        systolic: 0,
-        diastolic: 0,
-        readingType: 'normal',
-        timestamp: new Date().toISOString().slice(0, 16),
-        notes: ''
-      });
+      // Reset form only if not editing
+      if (!isEditing) {
+        setFormData({
+          systolic: 0,
+          diastolic: 0,
+          readingType: 'normal',
+          timestamp: new Date().toLocaleString('sv-SE').slice(0, 16),
+          notes: ''
+        });
+      }
 
       onSuccess?.();
     } catch (err) {
@@ -68,7 +87,7 @@ export default function BloodPressureForm({ onSuccess, onCancel }: BloodPressure
   return (
     <div className="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-        Add Blood Pressure Reading
+        {editingReading ? 'Edit Blood Pressure Reading' : 'Add Blood Pressure Reading'}
       </h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">

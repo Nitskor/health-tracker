@@ -28,10 +28,33 @@ export default function BloodSugarPage() {
 
   useEffect(() => {
     if (isSignedIn) {
-      fetchReadings();
-      fetchStats();
+      fetchData();
     }
   }, [isSignedIn]);
+
+  // Optimized: Fetch readings and stats in parallel
+  const fetchData = async () => {
+    try {
+      const [readingsResponse, statsResponse] = await Promise.all([
+        fetch('/api/blood-sugar'),
+        fetch('/api/blood-sugar/stats?period=30days')
+      ]);
+
+      if (readingsResponse.ok) {
+        const data = await readingsResponse.json();
+        setReadings(data.readings);
+      }
+
+      if (statsResponse.ok) {
+        const data = await statsResponse.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchReadings = async () => {
     try {
@@ -42,8 +65,6 @@ export default function BloodSugarPage() {
       }
     } catch (error) {
       console.error('Error fetching readings:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

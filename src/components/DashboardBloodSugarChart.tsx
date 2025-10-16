@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { BloodSugarReading } from '@/types/blood-sugar';
 import { getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-sugar-utils';
@@ -9,23 +9,34 @@ export default function DashboardBloodSugarChart() {
   const [recentReadings, setRecentReadings] = useState<BloodSugarReading[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Memoize chart data processing - MUST be before conditional returns
+  const chartData = useMemo(() => {
+    return recentReadings
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+      .map(reading => ({
+        date: new Date(reading.timestamp).toLocaleDateString(),
+        glucose: reading.glucose,
+        type: reading.readingType
+      }));
+  }, [recentReadings]);
+
   useEffect(() => {
+    const fetchRecentReadings = async () => {
+      try {
+        const response = await fetch('/api/blood-sugar?limit=10');
+        if (response.ok) {
+          const data = await response.json();
+          setRecentReadings(data.readings);
+        }
+      } catch (error) {
+        console.error('Error fetching recent readings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchRecentReadings();
   }, []);
-
-  const fetchRecentReadings = async () => {
-    try {
-      const response = await fetch('/api/blood-sugar?limit=10');
-      if (response.ok) {
-        const data = await response.json();
-        setRecentReadings(data.readings);
-      }
-    } catch (error) {
-      console.error('Error fetching recent readings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -48,15 +59,6 @@ export default function DashboardBloodSugarChart() {
       </div>
     );
   }
-
-  // Process data for the chart
-  const chartData = recentReadings
-    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-    .map(reading => ({
-      date: new Date(reading.timestamp).toLocaleDateString(),
-      glucose: reading.glucose,
-      type: reading.readingType
-    }));
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">

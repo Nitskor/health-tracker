@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo, lazy, Suspense } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import BloodPressureForm from '@/components/BloodPressureForm';
-import BloodPressureCharts from '@/components/BloodPressureCharts';
 import { BloodPressureReading, BloodPressureStats } from '@/types/blood-pressure';
 import { formatBloodPressure, getBloodPressureCategory, getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-pressure-utils';
 import { exportBloodPressureToPDF } from '@/lib/pdf-export-utils';
+
+// Lazy load the charts component for better initial load performance
+const BloodPressureCharts = lazy(() => import('@/components/BloodPressureCharts'));
 
 export default function BloodPressurePage() {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -28,10 +30,33 @@ export default function BloodPressurePage() {
 
   useEffect(() => {
     if (isSignedIn) {
-      fetchReadings();
-      fetchStats();
+      fetchData();
     }
   }, [isSignedIn]);
+
+  // Optimized: Fetch readings and stats in parallel
+  const fetchData = async () => {
+    try {
+      const [readingsResponse, statsResponse] = await Promise.all([
+        fetch('/api/blood-pressure'),
+        fetch('/api/blood-pressure/stats')
+      ]);
+
+      if (readingsResponse.ok) {
+        const data = await readingsResponse.json();
+        setReadings(data.readings);
+      }
+
+      if (statsResponse.ok) {
+        const data = await statsResponse.json();
+        setStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchReadings = async () => {
     try {
@@ -42,8 +67,6 @@ export default function BloodPressurePage() {
       }
     } catch (error) {
       console.error('Error fetching readings:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -113,13 +136,73 @@ export default function BloodPressurePage() {
     }
   }, [readings, filteredReadings.length]);
 
+  // Memoize grouped readings for better performance
+  const groupedReadings = useMemo(() => {
+    const readingsToShow = filteredReadings.length > 0 ? filteredReadings : readings;
+    
+    // Group readings by date
+    const grouped = readingsToShow.reduce((groups, reading) => {
+      const dateKey = new Date(reading.timestamp).toDateString();
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(reading);
+      return groups;
+    }, {} as { [key: string]: BloodPressureReading[] });
+    
+    // Sort dates in descending order (most recent first)
+    return Object.keys(grouped)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      .map(dateKey => ({
+        dateKey,
+        readings: grouped[dateKey]
+      }));
+  }, [readings, filteredReadings]);
 
-  if (!isLoaded) {
+
+  if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your health tracker...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+        <div className="container mx-auto px-4">
+          {/* Header Skeleton */}
+          <div className="mb-8 animate-pulse">
+            <div className="h-10 bg-gray-200 rounded w-64 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-96"></div>
+          </div>
+
+          {/* Stats Cards Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded w-24 mb-1"></div>
+                <div className="h-3 bg-gray-200 rounded w-20"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Buttons Skeleton */}
+          <div className="mb-6 flex gap-3">
+            <div className="h-10 bg-gray-200 rounded-lg w-40 animate-pulse"></div>
+            <div className="h-10 bg-gray-200 rounded-lg w-44 animate-pulse"></div>
+          </div>
+
+          {/* Chart Skeleton */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8 animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+            <div className="h-64 bg-gray-100 rounded"></div>
+          </div>
+
+          {/* Readings List Skeleton */}
+          <div className="bg-white rounded-lg shadow-md p-6 animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-40 mb-6"></div>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="border border-gray-200 rounded-lg p-5 mb-3">
+                <div className="h-8 bg-gray-200 rounded w-32 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-24"></div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -245,11 +328,23 @@ export default function BloodPressurePage() {
         {/* Charts Section */}
         {readings.length > 0 && (
           <div className="mb-8">
-            <BloodPressureCharts 
-              readings={readings} 
-              stats={stats || { normal: { count: 0, averageSystolic: 0, averageDiastolic: 0 }, afterActivity: { count: 0, averageSystolic: 0, averageDiastolic: 0 } }}
-              onFilteredReadingsChange={handleFilteredReadingsChange}
-            />
+            <Suspense fallback={
+              <div className="bg-white rounded-lg shadow-md p-6 animate-pulse">
+                <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+                <div className="h-64 bg-gray-100 rounded mb-4"></div>
+                <div className="flex gap-2">
+                  <div className="h-10 bg-gray-200 rounded w-24"></div>
+                  <div className="h-10 bg-gray-200 rounded w-24"></div>
+                  <div className="h-10 bg-gray-200 rounded w-24"></div>
+                </div>
+              </div>
+            }>
+              <BloodPressureCharts 
+                readings={readings} 
+                stats={stats || { normal: { count: 0, averageSystolic: 0, averageDiastolic: 0 }, afterActivity: { count: 0, averageSystolic: 0, averageDiastolic: 0 } }}
+                onFilteredReadingsChange={handleFilteredReadingsChange}
+              />
+            </Suspense>
           </div>
         )}
 
@@ -274,32 +369,13 @@ export default function BloodPressurePage() {
             
             {loading ? (
               <div className="text-center py-8">Loading readings...</div>
-            ) : (filteredReadings.length > 0 ? filteredReadings : readings).length === 0 ? (
+            ) : groupedReadings.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 No readings found for the selected filters. Try adjusting your time period or reading type.
               </div>
             ) : (
               <div className="space-y-6">
-                {(() => {
-                  const readingsToShow = filteredReadings.length > 0 ? filteredReadings : readings;
-                  
-                  // Group readings by date
-                  const groupedReadings = readingsToShow.reduce((groups, reading) => {
-                    const dateKey = new Date(reading.timestamp).toDateString();
-                    if (!groups[dateKey]) {
-                      groups[dateKey] = [];
-                    }
-                    groups[dateKey].push(reading);
-                    return groups;
-                  }, {} as { [key: string]: BloodPressureReading[] });
-                  
-                  // Sort dates in descending order (most recent first)
-                  const sortedDates = Object.keys(groupedReadings).sort((a, b) => 
-                    new Date(b).getTime() - new Date(a).getTime()
-                  );
-                  
-                  return sortedDates.map((dateKey) => {
-                    const dayReadings = groupedReadings[dateKey];
+                {groupedReadings.map(({ dateKey, readings: dayReadings }) => {
                     const readingDate = new Date(dayReadings[0].timestamp);
                     const isToday = readingDate.toDateString() === new Date().toDateString();
                     const isYesterday = readingDate.toDateString() === new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
@@ -402,8 +478,7 @@ export default function BloodPressurePage() {
                         </div>
                       </div>
                     );
-                  });
-                })()}
+                })}
               </div>
             )}
           </div>

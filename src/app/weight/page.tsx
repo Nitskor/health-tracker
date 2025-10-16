@@ -28,10 +28,33 @@ export default function WeightPage() {
 
   useEffect(() => {
     if (isSignedIn) {
-      fetchReadings();
-      fetchStats();
+      fetchData();
     }
   }, [isSignedIn]);
+
+  // Optimized: Fetch readings and stats in parallel
+  const fetchData = async () => {
+    try {
+      const [readingsResponse, statsResponse] = await Promise.all([
+        fetch('/api/weight'),
+        fetch('/api/weight/stats')
+      ]);
+
+      if (readingsResponse.ok) {
+        const data = await readingsResponse.json();
+        setReadings(data.readings);
+      }
+
+      if (statsResponse.ok) {
+        const data = await statsResponse.json();
+        setStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchReadings = async () => {
     try {
@@ -42,8 +65,6 @@ export default function WeightPage() {
       }
     } catch (error) {
       console.error('Error fetching readings:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

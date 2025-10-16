@@ -2,6 +2,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { BloodPressureReading } from '@/types/blood-pressure';
 import { WeightReading } from '@/types/weight';
+import { BloodSugarReading, ReadingType } from '@/types/blood-sugar';
+import { getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-sugar-utils';
 
 // Helper function to create a simple chart using HTML canvas
 async function createSimpleChart(
@@ -47,43 +49,57 @@ async function createSimpleChart(
   const maxValue = Math.max(...data.map(d => d.value));
   const minValue = Math.min(...data.map(d => d.value));
   const valueRange = maxValue - minValue;
-  const padding = valueRange * 0.1;
-  const scaledMin = minValue - padding;
-  const scaledMax = maxValue + padding;
-  const scaledRange = scaledMax - scaledMin;
+  
+  // For single data point or very small range, use a fixed range
+  let scaledMin, scaledMax, scaledRange;
+  if (data.length === 1 || valueRange === 0) {
+    // Use a fixed range around the value
+    const value = data[0].value;
+    scaledMin = value - 20;
+    scaledMax = value + 20;
+    scaledRange = 40;
+  } else {
+    const padding = valueRange * 0.2; // Increased padding for better visibility
+    scaledMin = minValue - padding;
+    scaledMax = maxValue + padding;
+    scaledRange = scaledMax - scaledMin;
+  }
 
   // Draw data points and lines
-  const pointSpacing = chartWidth / (data.length - 1);
+  const pointSpacing = data.length > 1 ? chartWidth / (data.length - 1) : chartWidth / 2;
   
-  ctx.strokeStyle = '#3B82F6';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  
-  data.forEach((point, index) => {
-    const x = chartX + (index * pointSpacing);
-    const y = chartY + chartHeight - ((point.value - scaledMin) / scaledRange) * chartHeight;
+  // Only draw lines if there's more than one point
+  if (data.length > 1) {
+    ctx.strokeStyle = data[0].color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
     
-    if (index === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  });
-  ctx.stroke();
+    data.forEach((point, index) => {
+      const x = chartX + (data.length === 1 ? chartWidth / 2 : index * pointSpacing);
+      const y = chartY + chartHeight - ((point.value - scaledMin) / scaledRange) * chartHeight;
+      
+      if (index === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
+  }
 
   // Draw data points
   data.forEach((point, index) => {
-    const x = chartX + (index * pointSpacing);
+    const x = chartX + (data.length === 1 ? chartWidth / 2 : index * pointSpacing);
     const y = chartY + chartHeight - ((point.value - scaledMin) / scaledRange) * chartHeight;
     
     ctx.fillStyle = point.color;
     ctx.beginPath();
-    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
     ctx.fill();
     
     // Draw value labels
     ctx.fillStyle = '#374151';
-    ctx.font = '12px Arial';
+    ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(point.value.toString(), x, y - 15);
   });
@@ -101,7 +117,7 @@ async function createSimpleChart(
   // Draw X-axis labels
   ctx.textAlign = 'center';
   data.forEach((point, index) => {
-    const x = chartX + (index * pointSpacing);
+    const x = chartX + (data.length === 1 ? chartWidth / 2 : index * pointSpacing);
     ctx.fillText(point.label, x, chartY + chartHeight + 20);
   });
 
@@ -635,4 +651,198 @@ export async function exportWeightToPDF(readings: WeightReading[]): Promise<void
 
   // Save the PDF
   pdf.save(`weight-report-${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// Helper functions to create blood sugar charts by reading type
+async function createBloodSugarChartByType(readings: BloodSugarReading[], type: ReadingType): Promise<string> {
+  if (readings.length === 0) return '';
+
+  const chartData = readings
+    .filter(r => r.readingType === type)
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    .map((reading) => ({
+      label: new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      value: reading.glucose,
+      color: getReadingTypeColor(type)
+    }));
+
+  if (chartData.length === 0) return '';
+
+  return await createSimpleChart(`${getReadingTypeLabel(type)} Blood Sugar Readings`, chartData);
+}
+
+export async function exportBloodSugarToPDF(readings: BloodSugarReading[]): Promise<void> {
+  if (readings.length === 0) {
+    alert('No data to export');
+    return;
+  }
+
+  // Separate readings by type
+  const readingTypes: ReadingType[] = ['fasting', 'before_meal', 'after_meal', 'bedtime', 'random'];
+  const readingsByType: { [key in ReadingType]: BloodSugarReading[] } = {
+    fasting: readings.filter(r => r.readingType === 'fasting'),
+    before_meal: readings.filter(r => r.readingType === 'before_meal'),
+    after_meal: readings.filter(r => r.readingType === 'after_meal'),
+    bedtime: readings.filter(r => r.readingType === 'bedtime'),
+    random: readings.filter(r => r.readingType === 'random'),
+  };
+
+  // Generate charts for each reading type that has data
+  const charts: { [key in ReadingType]?: string } = {};
+  for (const type of readingTypes) {
+    if (readingsByType[type].length > 0) {
+      charts[type] = await createBloodSugarChartByType(readings, type);
+    }
+  }
+
+  // Create new PDF document
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  let yPosition = 20;
+
+  // Helper function to add line
+  const addLine = (x1: number, y1: number, x2: number, y2: number, color: string = '#e5e7eb') => {
+    const rgbColor = parseInt(color.slice(1), 16);
+    const r = (rgbColor >> 16) & 255;
+    const g = (rgbColor >> 8) & 255;
+    const b = rgbColor & 255;
+    pdf.setDrawColor(r, g, b);
+    pdf.setLineWidth(0.5);
+    pdf.line(x1, y1, x2, y2);
+  };
+
+  // Helper function to check if we need a new page
+  const checkNewPage = (requiredSpace: number) => {
+    if (yPosition + requiredSpace > pageHeight - 20) {
+      pdf.addPage();
+      yPosition = 20;
+      return true;
+    }
+    return false;
+  };
+
+  // Title with better formatting
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(20);
+  pdf.setTextColor(16, 185, 129); // Green color
+  pdf.text('BLOOD SUGAR HEALTH REPORT', pageWidth / 2, yPosition, { align: 'center' });
+  yPosition += 10;
+
+  // Report date
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.setTextColor(107, 114, 128); // Gray color
+  pdf.text(`Generated on: ${new Date().toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })}`, pageWidth / 2, yPosition, { align: 'center' });
+  yPosition += 15;
+
+  // Iterate through each reading type
+  for (const type of readingTypes) {
+    const typeReadings = readingsByType[type];
+    if (typeReadings.length === 0) continue;
+
+    checkNewPage(50);
+    
+    // Section header with background
+    const typeColor = getReadingTypeColor(type);
+    const rgbColor = parseInt(typeColor.slice(1), 16);
+    const r = (rgbColor >> 16) & 255;
+    const g = (rgbColor >> 8) & 255;
+    const b = rgbColor & 255;
+    
+    pdf.setFillColor(r, g, b);
+    pdf.rect(15, yPosition - 5, pageWidth - 30, 10, 'F');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(255, 255, 255); // White
+    pdf.text(getReadingTypeLabel(type).toUpperCase() + ' READINGS', 20, yPosition, { baseline: 'middle' });
+    yPosition += 10;
+
+    // Add chart
+    const chartBase64 = charts[type];
+    if (chartBase64) {
+      pdf.addImage(chartBase64, 'PNG', 15, yPosition, 180, 90);
+      yPosition += 100;
+    }
+
+    // Table headers with better alignment
+    const colWidths = [35, 25, 30, 70];
+    const colX = [15, 50, 75, 105];
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(10);
+    pdf.setTextColor(55, 65, 81); // Dark gray
+    
+    pdf.text('Date', colX[0], yPosition);
+    pdf.text('Time', colX[1], yPosition);
+    pdf.text('Glucose (mg/dL)', colX[2], yPosition, { align: 'center' });
+    pdf.text('Notes', colX[3], yPosition);
+    yPosition += 7;
+
+    // Draw header line
+    addLine(15, yPosition, pageWidth - 15, yPosition, typeColor);
+    yPosition += 5;
+
+    // Table rows with alternating colors
+    typeReadings
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .forEach((reading, index) => {
+        if (checkNewPage(15)) {
+          // Redraw headers on new page
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(10);
+          pdf.setTextColor(55, 65, 81);
+          
+          pdf.text('Date', colX[0], yPosition);
+          pdf.text('Time', colX[1], yPosition);
+          pdf.text('Glucose (mg/dL)', colX[2], yPosition, { align: 'center' });
+          pdf.text('Notes', colX[3], yPosition);
+          yPosition += 7;
+          
+          addLine(15, yPosition, pageWidth - 15, yPosition, typeColor);
+          yPosition += 5;
+        }
+
+        // Alternating row background
+        if (index % 2 === 0) {
+          pdf.setFillColor(249, 250, 251); // Light gray
+          pdf.rect(15, yPosition - 4, pageWidth - 30, 9, 'F');
+        }
+
+        const date = new Date(reading.timestamp);
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        });
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(31, 41, 55); // Dark gray
+        
+        pdf.text(dateStr, colX[0], yPosition);
+        pdf.text(timeStr, colX[1], yPosition);
+        pdf.text(reading.glucose.toString(), colX[2], yPosition, { align: 'center' });
+        pdf.text(reading.notes || '-', colX[3], yPosition);
+        yPosition += 9;
+      });
+
+    yPosition += 10;
+  }
+
+  // Footer
+  yPosition = pageHeight - 20;
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.setTextColor(107, 114, 128); // Gray color
+  pdf.text('Generated by Health Tracker', pageWidth / 2, yPosition, { align: 'center' });
+
+  // Save the PDF
+  pdf.save(`blood-sugar-report-${new Date().toISOString().split('T')[0]}.pdf`);
 }

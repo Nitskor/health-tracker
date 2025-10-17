@@ -137,31 +137,31 @@ export default function Home() {
           </div>
 
           {/* Quick Access Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-10">
             {/* Blood Pressure Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-white rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 md:p-6 text-white">
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <svg className="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <span className="text-2xl font-bold opacity-90">BP</span>
+                  <span className="text-xl md:text-2xl font-bold opacity-90">BP</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Blood Pressure</h3>
-                <p className="text-blue-100 text-sm">Track systolic & diastolic</p>
+                <h3 className="text-lg md:text-xl font-bold mb-1">Blood Pressure</h3>
+                <p className="text-blue-100 text-xs md:text-sm">Track systolic & diastolic</p>
               </div>
-              <div className="p-6 space-y-3">
+              <div className="p-4 md:p-6 space-y-2 md:space-y-3">
                 <a 
                   href="/blood-pressure"
-                  className="block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg"
+                  className="block w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg text-sm md:text-base"
                 >
                   Open Tracker →
                 </a>
                 <button 
                   onClick={() => setShowBPForm(true)}
-                  className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-xl hover:bg-blue-100 transition-colors font-medium"
+                  className="w-full bg-blue-50 text-blue-700 px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:bg-blue-100 transition-colors font-medium text-sm md:text-base"
                 >
                   + Quick Add
                 </button>
@@ -169,29 +169,29 @@ export default function Home() {
             </div>
 
             {/* Blood Sugar Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 text-white">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-white rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 md:p-6 text-white">
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <svg className="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
-                  <span className="text-2xl font-bold opacity-90">BS</span>
+                  <span className="text-xl md:text-2xl font-bold opacity-90">BS</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Blood Sugar</h3>
-                <p className="text-green-100 text-sm">Monitor glucose levels</p>
+                <h3 className="text-lg md:text-xl font-bold mb-1">Blood Sugar</h3>
+                <p className="text-green-100 text-xs md:text-sm">Monitor glucose levels</p>
               </div>
-              <div className="p-6 space-y-3">
+              <div className="p-4 md:p-6 space-y-2 md:space-y-3">
                 <a 
                   href="/blood-sugar"
-                  className="block w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg"
+                  className="block w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg text-sm md:text-base"
                 >
                   Open Tracker →
                 </a>
                 <button 
                   onClick={() => setShowBSForm(true)}
-                  className="w-full bg-green-50 text-green-700 px-4 py-3 rounded-xl hover:bg-green-100 transition-colors font-medium"
+                  className="w-full bg-green-50 text-green-700 px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:bg-green-100 transition-colors font-medium text-sm md:text-base"
                 >
                   + Quick Add
                 </button>
@@ -199,29 +199,29 @@ export default function Home() {
             </div>
 
             {/* Weight Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 text-white">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-white rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1">
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-4 md:p-6 text-white">
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <svg className="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                     </svg>
                   </div>
-                  <span className="text-2xl font-bold opacity-90">WT</span>
+                  <span className="text-xl md:text-2xl font-bold opacity-90">WT</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Weight Tracker</h3>
-                <p className="text-purple-100 text-sm">Monitor weight trends</p>
+                <h3 className="text-lg md:text-xl font-bold mb-1">Weight Tracker</h3>
+                <p className="text-purple-100 text-xs md:text-sm">Monitor weight trends</p>
               </div>
-              <div className="p-6 space-y-3">
+              <div className="p-4 md:p-6 space-y-2 md:space-y-3">
                 <a 
                   href="/weight"
-                  className="block w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg"
+                  className="block w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 text-center font-semibold shadow-md hover:shadow-lg text-sm md:text-base"
                 >
                   Open Tracker →
                 </a>
                 <button 
                   onClick={() => setShowWeightForm(true)}
-                  className="w-full bg-purple-50 text-purple-700 px-4 py-3 rounded-xl hover:bg-purple-100 transition-colors font-medium"
+                  className="w-full bg-purple-50 text-purple-700 px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:bg-purple-100 transition-colors font-medium text-sm md:text-base"
                 >
                   + Quick Add
                 </button>

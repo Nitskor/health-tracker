@@ -203,46 +203,46 @@ export default function BloodSugarPage() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
             {/* Average Glucose Stats */}
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Average Glucose</h3>
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl md:rounded-2xl shadow-xl p-4 md:p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-lg font-bold">Average Glucose</h3>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-green-100 text-sm">Last 30 days</p>
+              <div className="space-y-1 md:space-y-2">
+                <p className="text-green-100 text-xs md:text-sm">Last 30 days</p>
                 {stats.totalReadings > 0 ? (
                   <>
-                    <p className="text-4xl font-bold">
-                      {stats.averageGlucose} <span className="text-2xl">mg/dL</span>
+                    <p className="text-2xl md:text-4xl font-bold">
+                      {stats.averageGlucose} <span className="text-lg md:text-2xl">mg/dL</span>
                     </p>
-                    <p className="text-green-100 text-sm">
+                    <p className="text-green-100 text-xs md:text-sm">
                       Range: {stats.lowestGlucose} - {stats.highestGlucose} mg/dL
                     </p>
-                    <p className="text-green-100 text-sm mt-2">{stats.totalReadings} readings</p>
+                    <p className="text-green-100 text-xs md:text-sm mt-1 md:mt-2">{stats.totalReadings} readings</p>
                   </>
                 ) : (
-                  <p className="text-2xl font-bold">No readings yet</p>
+                  <p className="text-xl md:text-2xl font-bold">No readings yet</p>
                 )}
               </div>
             </div>
 
             {/* Readings by Type Stats */}
-            <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Readings by Type</h3>
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl md:rounded-2xl shadow-xl p-4 md:p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-lg font-bold">Readings by Type</h3>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
                 </div>
               </div>
-              <div className="space-y-1.5 text-sm text-teal-50">
+              <div className="space-y-1.5 text-xs md:text-sm text-teal-50">
                 <div className="flex justify-between items-center">
                   <span>Fasting:</span>
                   <span className="font-semibold text-white">{stats.readingsByType.fasting}</span>
@@ -269,13 +269,13 @@ export default function BloodSugarPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="mb-8 flex flex-wrap gap-4">
+        <div className="mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <button
             onClick={() => {
               setEditingReading(null);
               setShowForm(!showForm);
             }}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 sm:px-8 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -285,7 +285,7 @@ export default function BloodSugarPage() {
           {readings.length > 0 && (
             <button
               onClick={handleExportData}
-              className="bg-white border-2 border-green-200 text-green-600 px-8 py-3 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2"
+              className="bg-white border-2 border-green-200 text-green-600 px-6 sm:px-8 py-3 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
@@ -306,7 +306,7 @@ export default function BloodSugarPage() {
 
         {/* Charts */}
         {readings.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8 -mx-4 sm:mx-0">
             <BloodSugarCharts 
               readings={readings}
               onFilteredReadingsChange={handleFilteredReadingsChange}

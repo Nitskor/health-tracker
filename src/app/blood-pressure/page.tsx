@@ -275,61 +275,61 @@ export default function BloodPressurePage() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
             {/* Normal Readings Stats */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Normal Readings</h3>
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl md:rounded-2xl shadow-xl p-4 md:p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-lg font-bold">Normal Readings</h3>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-blue-100 text-sm">Last 30 days</p>
+              <div className="space-y-1 md:space-y-2">
+                <p className="text-blue-100 text-xs md:text-sm">Last 30 days</p>
                 {stats.normal.count > 0 ? (
                   <>
-                    <p className="text-4xl font-bold">
+                    <p className="text-2xl md:text-4xl font-bold">
                       {stats.normal.averageSystolic}/{stats.normal.averageDiastolic}
                     </p>
-                    <p className="text-blue-100">mmHg average</p>
-                    <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium mt-2 backdrop-blur-sm">
+                    <p className="text-blue-100 text-sm md:text-base">mmHg average</p>
+                    <div className="inline-block px-2 md:px-3 py-1 bg-white/20 rounded-full text-xs md:text-sm font-medium mt-1 md:mt-2 backdrop-blur-sm">
                       {getBloodPressureCategory(stats.normal.averageSystolic, stats.normal.averageDiastolic).category}
                     </div>
-                    <p className="text-blue-100 text-sm mt-2">{stats.normal.count} readings</p>
+                    <p className="text-blue-100 text-xs md:text-sm mt-1 md:mt-2">{stats.normal.count} readings</p>
                   </>
                 ) : (
-                  <p className="text-2xl font-bold">No readings yet</p>
+                  <p className="text-xl md:text-2xl font-bold">No readings yet</p>
                 )}
               </div>
             </div>
 
             {/* After Activity Stats */}
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">After Activity</h3>
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl md:rounded-2xl shadow-xl p-4 md:p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-lg font-bold">After Activity</h3>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-purple-100 text-sm">Last 30 days</p>
+              <div className="space-y-1 md:space-y-2">
+                <p className="text-purple-100 text-xs md:text-sm">Last 30 days</p>
                 {stats.afterActivity.count > 0 ? (
                   <>
-                    <p className="text-4xl font-bold">
+                    <p className="text-2xl md:text-4xl font-bold">
                       {stats.afterActivity.averageSystolic}/{stats.afterActivity.averageDiastolic}
                     </p>
-                    <p className="text-purple-100">mmHg average</p>
-                    <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium mt-2 backdrop-blur-sm">
+                    <p className="text-purple-100 text-sm md:text-base">mmHg average</p>
+                    <div className="inline-block px-2 md:px-3 py-1 bg-white/20 rounded-full text-xs md:text-sm font-medium mt-1 md:mt-2 backdrop-blur-sm">
                       {getBloodPressureCategory(stats.afterActivity.averageSystolic, stats.afterActivity.averageDiastolic).category}
                     </div>
-                    <p className="text-purple-100 text-sm mt-2">{stats.afterActivity.count} readings</p>
+                    <p className="text-purple-100 text-xs md:text-sm mt-1 md:mt-2">{stats.afterActivity.count} readings</p>
                   </>
                 ) : (
-                  <p className="text-2xl font-bold">No readings yet</p>
+                  <p className="text-xl md:text-2xl font-bold">No readings yet</p>
                 )}
               </div>
             </div>
@@ -337,10 +337,10 @@ export default function BloodPressurePage() {
         )}
 
         {/* Action Buttons */}
-        <div className="mb-8 flex flex-wrap gap-4">
+        <div className="mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <button
             onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 sm:px-8 py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -349,7 +349,7 @@ export default function BloodPressurePage() {
           </button>
           <button
             onClick={handleExportData}
-            className="bg-white border-2 border-indigo-200 text-indigo-600 px-8 py-3 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2"
+            className="bg-white border-2 border-indigo-200 text-indigo-600 px-6 sm:px-8 py-3 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
@@ -373,9 +373,9 @@ export default function BloodPressurePage() {
 
         {/* Charts Section */}
         {readings.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8 -mx-4 sm:mx-0">
             <Suspense fallback={
-              <div className="bg-white rounded-lg shadow-md p-6 animate-pulse">
+              <div className="bg-white rounded-lg shadow-md p-4 md:p-6 animate-pulse">
                 <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
                 <div className="h-64 bg-gray-100 rounded mb-4"></div>
                 <div className="flex gap-2">
@@ -437,7 +437,8 @@ export default function BloodPressurePage() {
                       {groupedReadings.flatMap(g => g.readings).filter(r => r.readingType === 'normal').length} readings
                     </span>
                   </div>
-                  <div className="overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b-2 border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100">
@@ -526,6 +527,86 @@ export default function BloodPressurePage() {
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-3">
+                    {groupedReadings.flatMap(({ readings }) => 
+                      readings.filter(r => r.readingType === 'normal')
+                    ).length === 0 ? (
+                      <div className="p-8 text-center text-gray-500 border border-gray-200 rounded-xl">
+                        No normal readings in this period
+                      </div>
+                    ) : (
+                      groupedReadings.flatMap(({ readings }) => 
+                        readings.filter(r => r.readingType === 'normal')
+                      ).map((reading) => {
+                        const category = getBloodPressureCategory(reading.systolic, reading.diastolic);
+                        const readingDate = new Date(reading.timestamp).toLocaleDateString('en-US', { 
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        });
+                        const readingTime = new Date(reading.timestamp).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit',
+                          hour12: false 
+                        });
+                        
+                        return (
+                          <div 
+                            key={reading._id} 
+                            className="bg-white border border-blue-200 rounded-xl p-4 shadow-sm"
+                          >
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <div className="text-sm font-medium text-gray-500">{readingDate}</div>
+                                <div className="text-xs text-gray-400">{readingTime}</div>
+                              </div>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                category.color === 'green' ? 'bg-green-100 text-green-700' :
+                                category.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                                category.color === 'orange' ? 'bg-orange-100 text-orange-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {category.category}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 mb-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Blood Pressure</div>
+                                <div className="text-2xl font-bold text-gray-900">{reading.systolic}/{reading.diastolic}</div>
+                                <div className="text-xs text-gray-500">mmHg</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Heart Rate</div>
+                                <div className="text-2xl font-bold text-gray-900">{reading.bpm}</div>
+                                <div className="text-xs text-gray-500">BPM</div>
+                              </div>
+                            </div>
+                            {reading.notes && (
+                              <div className="mb-3 p-2 bg-gray-50 rounded text-sm text-gray-600">
+                                {reading.notes}
+                              </div>
+                            )}
+                            <div className="flex gap-2 pt-3 border-t border-gray-100">
+                              <button 
+                                onClick={() => handleEditReading(reading)}
+                                className="flex-1 py-2 px-3 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors font-medium text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => setDeletingReading(reading)}
+                                className="flex-1 py-2 px-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors font-medium text-sm"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
 
                 {/* After Activity Readings Table */}
@@ -539,7 +620,8 @@ export default function BloodPressurePage() {
                       {groupedReadings.flatMap(g => g.readings).filter(r => r.readingType === 'after_activity').length} readings
                     </span>
                   </div>
-                  <div className="overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b-2 border-gray-200 bg-gradient-to-r from-purple-50 to-purple-100">
@@ -635,6 +717,100 @@ export default function BloodPressurePage() {
                         )}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-3">
+                    {groupedReadings.flatMap(({ readings }) => 
+                      readings.filter(r => r.readingType === 'after_activity')
+                    ).length === 0 ? (
+                      <div className="p-8 text-center text-gray-500 border border-gray-200 rounded-xl">
+                        No after activity readings in this period
+                      </div>
+                    ) : (
+                      groupedReadings.flatMap(({ readings }) => 
+                        readings.filter(r => r.readingType === 'after_activity')
+                      ).map((reading) => {
+                        const category = getBloodPressureCategory(reading.systolic, reading.diastolic);
+                        const readingDate = new Date(reading.timestamp).toLocaleDateString('en-US', { 
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        });
+                        const readingTime = new Date(reading.timestamp).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit',
+                          hour12: false 
+                        });
+                        
+                        return (
+                          <div 
+                            key={reading._id} 
+                            className="bg-white border border-purple-200 rounded-xl p-4 shadow-sm"
+                          >
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <div className="text-sm font-medium text-gray-500">{readingDate}</div>
+                                <div className="text-xs text-gray-400">{readingTime}</div>
+                              </div>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                category.color === 'green' ? 'bg-green-100 text-green-700' :
+                                category.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                                category.color === 'orange' ? 'bg-orange-100 text-orange-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {category.category}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Blood Pressure</div>
+                                <div className="text-xl font-bold text-gray-900">{reading.systolic}/{reading.diastolic}</div>
+                                <div className="text-xs text-gray-500">mmHg</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Heart Rate</div>
+                                <div className="text-xl font-bold text-gray-900">{reading.bpm}</div>
+                                <div className="text-xs text-gray-500">BPM</div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 mb-3 p-2 bg-purple-50 rounded">
+                              <div>
+                                <div className="text-xs text-purple-600 mb-1">Walk Duration</div>
+                                <div className="text-sm font-bold text-purple-900">
+                                  {reading.walkDuration ? `${reading.walkDuration} min` : '-'}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-purple-600 mb-1">Peak BPM</div>
+                                <div className="text-sm font-bold text-purple-900">
+                                  {reading.maxBpmDuringWalk || '-'}
+                                </div>
+                              </div>
+                            </div>
+                            {reading.notes && (
+                              <div className="mb-3 p-2 bg-gray-50 rounded text-sm text-gray-600">
+                                {reading.notes}
+                              </div>
+                            )}
+                            <div className="flex gap-2 pt-3 border-t border-gray-100">
+                              <button 
+                                onClick={() => handleEditReading(reading)}
+                                className="flex-1 py-2 px-3 text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors font-medium text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => setDeletingReading(reading)}
+                                className="flex-1 py-2 px-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors font-medium text-sm"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               </div>

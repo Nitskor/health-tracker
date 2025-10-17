@@ -199,58 +199,58 @@ export default function WeightPage() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
             {/* Current Weight Stats */}
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Average Weight</h3>
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl md:rounded-2xl shadow-xl p-4 md:p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-lg font-bold">Average Weight</h3>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-purple-100 text-sm">Last 30 days</p>
+              <div className="space-y-1 md:space-y-2">
+                <p className="text-purple-100 text-xs md:text-sm">Last 30 days</p>
                 {stats.count > 0 ? (
                   <>
-                    <p className="text-4xl font-bold">
+                    <p className="text-2xl md:text-4xl font-bold">
                       {formatWeight(stats.averageWeight)}
                     </p>
-                    <p className="text-purple-100 text-sm">
+                    <p className="text-purple-100 text-xs md:text-sm">
                       Range: {formatWeight(stats.minWeight)} - {formatWeight(stats.maxWeight)}
                     </p>
-                    <p className="text-purple-100 text-sm mt-2">{stats.count} readings</p>
+                    <p className="text-purple-100 text-xs md:text-sm mt-1 md:mt-2">{stats.count} readings</p>
                   </>
                 ) : (
-                  <p className="text-2xl font-bold">No readings yet</p>
+                  <p className="text-xl md:text-2xl font-bold">No readings yet</p>
                 )}
               </div>
             </div>
 
             {/* Weight Change Stats */}
-            <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">30-Day Change</h3>
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl md:rounded-2xl shadow-xl p-4 md:p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-lg font-bold">30-Day Change</h3>
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg md:rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-5 h-5 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-pink-100 text-sm">Weight trend</p>
+              <div className="space-y-1 md:space-y-2">
+                <p className="text-pink-100 text-xs md:text-sm">Weight trend</p>
                 {stats.count > 0 && stats.weightChange !== 0 ? (
                   <>
-                    <p className="text-4xl font-bold">
+                    <p className="text-2xl md:text-4xl font-bold">
                       {getWeightChangeLabel(stats.weightChange)}
                     </p>
-                    <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium mt-2 backdrop-blur-sm">
+                    <div className="inline-block px-2 md:px-3 py-1 bg-white/20 rounded-full text-xs md:text-sm font-medium mt-1 md:mt-2 backdrop-blur-sm">
                       {stats.weightChange > 0 ? '↑ Weight gain' : '↓ Weight loss'}
                     </div>
                   </>
                 ) : (
-                  <p className="text-2xl font-bold">No change yet</p>
+                  <p className="text-xl md:text-2xl font-bold">No change yet</p>
                 )}
               </div>
             </div>
@@ -258,10 +258,10 @@ export default function WeightPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="mb-8 flex flex-wrap gap-4">
+        <div className="mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
           <button
             onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 sm:px-8 py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -270,7 +270,7 @@ export default function WeightPage() {
           </button>
           <button
             onClick={handleExportData}
-            className="bg-white border-2 border-purple-200 text-purple-600 px-8 py-3 rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2"
+            className="bg-white border-2 border-purple-200 text-purple-600 px-6 sm:px-8 py-3 rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
@@ -293,7 +293,7 @@ export default function WeightPage() {
 
         {/* Charts Section */}
         {readings.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8 -mx-4 sm:mx-0">
             <WeightCharts 
               readings={readings} 
               stats={stats || { count: 0, averageWeight: 0, minWeight: 0, maxWeight: 0, recentReadings: [], weightChange: 0 }}

@@ -241,25 +241,27 @@ export default function WeightCharts({ readings, stats, onFilteredReadingsChange
       {timeFilter === 'custom' && (
         <div className="mb-4 p-4 bg-gray-50 rounded-lg">
           <h4 className="text-sm font-medium text-gray-700 mb-3">Select Date Range</h4>
-          <div className="flex gap-4 items-center">
-            <div>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
+            <div className="flex-1">
               <label htmlFor="start-date" className="block text-xs text-gray-600 mb-1">Start Date</label>
               <input
                 type="date"
                 id="start-date"
                 value={customDateRange.start}
                 onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                style={{ colorScheme: 'light' }}
               />
             </div>
-            <div>
+            <div className="flex-1">
               <label htmlFor="end-date" className="block text-xs text-gray-600 mb-1">End Date</label>
               <input
                 type="date"
                 id="end-date"
                 value={customDateRange.end}
                 onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                style={{ colorScheme: 'light' }}
               />
             </div>
           </div>

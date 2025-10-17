@@ -251,14 +251,15 @@ export default function BloodSugarCharts({ readings, onFilteredReadingsChange }:
             {/* Custom Date Range Picker */}
             {showCustomDatePicker && (
               <div className="mt-3 p-3 bg-gray-50 rounded-md space-y-2">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
                     <input
                       type="date"
                       value={customDateRange?.start || ''}
                       onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value } as any)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded text-gray-900"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded text-gray-900 font-medium"
+                      style={{ colorScheme: 'light' }}
                     />
                   </div>
                   <div>
@@ -267,7 +268,8 @@ export default function BloodSugarCharts({ readings, onFilteredReadingsChange }:
                       type="date"
                       value={customDateRange?.end || ''}
                       onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value } as any)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded text-gray-900"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded text-gray-900 font-medium"
+                      style={{ colorScheme: 'light' }}
                     />
                   </div>
                 </div>

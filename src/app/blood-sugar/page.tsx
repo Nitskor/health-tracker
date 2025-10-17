@@ -306,7 +306,7 @@ export default function BloodSugarPage() {
 
         {/* Charts */}
         {readings.length > 0 && (
-          <div className="mb-6 md:mb-8 -mx-4 sm:mx-0">
+          <div className="mb-4 md:mb-8 -mx-4 sm:mx-0">
             <BloodSugarCharts 
               readings={readings}
               onFilteredReadingsChange={handleFilteredReadingsChange}
@@ -315,28 +315,28 @@ export default function BloodSugarPage() {
         )}
 
         {/* Recent Readings */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
-          <div className="p-6 sm:p-8">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Recent Readings</h2>
-              <p className="text-sm text-gray-600">{Object.keys(groupedReadings).length} days with readings</p>
+        <div className="bg-white/90 backdrop-blur-sm rounded-none sm:rounded-xl md:rounded-2xl shadow-xl border-y sm:border border-gray-100 -mx-4 sm:mx-0">
+          <div className="p-3 md:p-6">
+            <div className="mb-4 md:mb-8">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Recent Readings</h2>
+              <p className="text-xs md:text-sm text-gray-600">{Object.keys(groupedReadings).length} days with readings</p>
             </div>
             <div>
             {Object.keys(groupedReadings).length > 0 ? (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {Object.entries(groupedReadings).map(([date, dateReadings]) => (
-                  <div key={date} className="space-y-4">
+                  <div key={date} className="space-y-3 md:space-y-4">
                     {/* Date Header */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3 md:space-x-4">
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                      <div className="px-5 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
-                        <h3 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
+                      <div className="px-3 md:px-5 py-1.5 md:py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
+                        <h3 className="text-xs md:text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
                           {date}
                         </h3>
                       </div>
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-3 md:space-y-4">
                       {dateReadings.map((reading) => {
                         const category = getBloodSugarCategory(reading.glucose, reading.readingType);
                         const time = new Date(reading.timestamp).toLocaleTimeString('en-US', {

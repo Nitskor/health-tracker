@@ -293,7 +293,7 @@ export default function WeightPage() {
 
         {/* Charts Section */}
         {readings.length > 0 && (
-          <div className="mb-6 md:mb-8 -mx-4 sm:mx-0">
+          <div className="mb-4 md:mb-8 -mx-4 sm:mx-0">
             <WeightCharts 
               readings={readings} 
               stats={stats || { count: 0, averageWeight: 0, minWeight: 0, maxWeight: 0, recentReadings: [], weightChange: 0 }}
@@ -303,14 +303,14 @@ export default function WeightPage() {
         )}
 
         {/* Readings List */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-none sm:rounded-xl md:rounded-2xl shadow-xl border-y sm:border border-gray-100 -mx-4 sm:mx-0">
+          <div className="p-3 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 md:gap-4 mb-4 md:mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
                   Recent Readings
                 </h2>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs md:text-sm text-gray-600">
                   {filteredReadings.length > 0 ? filteredReadings.length : readings.length} total readings
                 </p>
               </div>
@@ -323,7 +323,7 @@ export default function WeightPage() {
                 No readings found for the selected filters. Try adjusting your time period.
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {(() => {
                   const readingsToShow = filteredReadings.length > 0 ? filteredReadings : readings;
                   

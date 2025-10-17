@@ -144,51 +144,51 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       {/* Time Filter Tabs */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h3 className="text-xl font-bold text-gray-900">Blood Pressure Trends</h3>
-          <div className="flex flex-wrap gap-2">
+      <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-3 md:p-6 border border-gray-100">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 mb-4 md:mb-6">
+          <h3 className="text-lg md:text-xl font-bold text-gray-900">BP Trends</h3>
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             <button
               onClick={() => setTimeFilter('7')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-sm md:text-base font-medium transition-all ${
                 timeFilter === '7'
                   ? 'bg-blue-500 text-white shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              7 days
+              7d
             </button>
             <button
               onClick={() => setTimeFilter('30')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-sm md:text-base font-medium transition-all ${
                 timeFilter === '30'
                   ? 'bg-blue-500 text-white shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              30 days
+              30d
             </button>
             <button
               onClick={() => setTimeFilter('90')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-sm md:text-base font-medium transition-all ${
                 timeFilter === '90'
                   ? 'bg-blue-500 text-white shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              90 days
+              90d
             </button>
             <button
               onClick={() => setTimeFilter('custom')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-sm md:text-base font-medium transition-all ${
                 timeFilter === 'custom'
                   ? 'bg-blue-500 text-white shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              Custom Range
+              Custom
             </button>
           </div>
         </div>
@@ -220,36 +220,38 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
         )}
 
         {/* Normal Readings - Blood Pressure Chart */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-bold text-blue-600 flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-              Normal Readings - Blood Pressure
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 md:mb-4">
+            <h4 className="text-base md:text-lg font-bold text-blue-600 flex items-center gap-2">
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-blue-500 rounded-full"></div>
+              <span className="hidden sm:inline">Normal Readings - Blood Pressure</span>
+              <span className="sm:hidden">Normal BP</span>
             </h4>
-            <span className="text-sm text-gray-500">{normalData.length} data points</span>
+            <span className="text-xs md:text-sm text-gray-500">{normalData.length} points</span>
           </div>
           
           {normalData.length > 0 ? (
-            <div className="h-80">
+            <div className="h-56 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={normalData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={normalData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   
                   {/* Reference Areas for BP Categories */}
-                  <ReferenceArea y1={0} y2={120} fill="#10b981" fillOpacity={0.15} label={{ value: 'Normal', position: 'insideTopRight', fill: '#059669', fontSize: 11, fontWeight: 600 }} />
-                  <ReferenceArea y1={120} y2={130} fill="#f59e0b" fillOpacity={0.2} label={{ value: 'Elevated', position: 'insideTopRight', fill: '#d97706', fontSize: 11, fontWeight: 600 }} />
-                  <ReferenceArea y1={130} y2={200} fill="#ef4444" fillOpacity={0.15} label={{ value: 'High', position: 'insideTopRight', fill: '#dc2626', fontSize: 11, fontWeight: 600 }} />
+                  <ReferenceArea y1={0} y2={120} fill="#10b981" fillOpacity={0.15} label={{ value: 'Normal', position: 'insideTopRight', fill: '#059669', fontSize: 9, fontWeight: 600 }} />
+                  <ReferenceArea y1={120} y2={130} fill="#f59e0b" fillOpacity={0.2} label={{ value: 'Elevated', position: 'insideTopRight', fill: '#d97706', fontSize: 9, fontWeight: 600 }} />
+                  <ReferenceArea y1={130} y2={200} fill="#ef4444" fillOpacity={0.15} label={{ value: 'High', position: 'insideTopRight', fill: '#dc2626', fontSize: 9, fontWeight: 600 }} />
                   
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6b7280"
                   />
                   <YAxis 
                     domain={[60, 180]}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6b7280"
-                    label={{ value: 'mmHg', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
+                    width={35}
+                    label={{ value: 'mmHg', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend 
@@ -260,47 +262,48 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
                     type="monotone" 
                     dataKey="systolic" 
                     stroke="#3b82f6" 
-                    strokeWidth={4}
-                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 7 }}
-                    activeDot={{ r: 9 }}
+                    strokeWidth={3}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
                     name="Systolic"
                   />
                   <Line 
                     type="monotone" 
                     dataKey="diastolic" 
                     stroke="#8b5cf6" 
-                    strokeWidth={4}
+                    strokeWidth={3}
                     strokeDasharray="5 5"
-                    dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 7 }}
-                    activeDot={{ r: 9 }}
+                    dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
                     name="Diastolic"
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-80 flex items-center justify-center bg-gray-50 rounded-xl">
-              <p className="text-gray-500">No normal readings in this time period</p>
+            <div className="h-56 md:h-80 flex items-center justify-center bg-gray-50 rounded-xl">
+              <p className="text-sm md:text-base text-gray-500">No normal readings in this time period</p>
             </div>
           )}
         </div>
 
         {/* Normal Readings - Heart Rate Chart */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-bold text-red-600 flex items-center gap-2">
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 md:mb-4">
+            <h4 className="text-base md:text-lg font-bold text-red-600 flex items-center gap-2">
               <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
               </svg>
-              Normal Readings - Heart Rate
+              <span className="hidden sm:inline">Normal Readings - Heart Rate</span>
+              <span className="sm:hidden">Normal Heart Rate</span>
             </h4>
-            <span className="text-sm text-gray-500">{normalData.length} data points</span>
+            <span className="text-xs md:text-sm text-gray-500">{normalData.length} points</span>
           </div>
           
           {normalData.length > 0 ? (
-            <div className="h-80">
+            <div className="h-56 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={normalData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={normalData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   
                   {/* Reference Areas for Heart Rate */}
@@ -308,14 +311,15 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
                   
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6b7280"
                   />
                   <YAxis 
                     domain={[30, 120]}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#ef4444"
-                    label={{ value: 'BPM', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#ef4444' } }}
+                    width={35}
+                    label={{ value: 'BPM', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: '#ef4444' } }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend 
@@ -326,52 +330,54 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
                     type="monotone" 
                     dataKey="bpm" 
                     stroke="#ef4444" 
-                    strokeWidth={4}
-                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 7 }}
-                    activeDot={{ r: 9 }}
+                    strokeWidth={3}
+                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
                     name="Heart Rate (BPM)"
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-80 flex items-center justify-center bg-gray-50 rounded-xl">
-              <p className="text-gray-500">No normal readings in this time period</p>
+            <div className="h-56 md:h-80 flex items-center justify-center bg-gray-50 rounded-xl">
+              <p className="text-sm md:text-base text-gray-500">No normal readings in this time period</p>
             </div>
           )}
         </div>
 
         {/* After Activity Readings - Blood Pressure Chart */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-bold text-purple-600 flex items-center gap-2">
-              <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
-              After Activity Readings - Blood Pressure
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 md:mb-4">
+            <h4 className="text-base md:text-lg font-bold text-purple-600 flex items-center gap-2">
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-purple-500 rounded-full"></div>
+              <span className="hidden sm:inline">After Activity Readings - Blood Pressure</span>
+              <span className="sm:hidden">Activity BP</span>
             </h4>
-            <span className="text-sm text-gray-500">{afterActivityData.length} data points</span>
+            <span className="text-xs md:text-sm text-gray-500">{afterActivityData.length} points</span>
           </div>
           
           {afterActivityData.length > 0 ? (
-            <div className="h-80">
+            <div className="h-56 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={afterActivityData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={afterActivityData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   
                   {/* Reference Areas for BP Categories */}
-                  <ReferenceArea y1={0} y2={120} fill="#10b981" fillOpacity={0.15} label={{ value: 'Normal', position: 'insideTopRight', fill: '#059669', fontSize: 11, fontWeight: 600 }} />
-                  <ReferenceArea y1={120} y2={130} fill="#f59e0b" fillOpacity={0.2} label={{ value: 'Elevated', position: 'insideTopRight', fill: '#d97706', fontSize: 11, fontWeight: 600 }} />
-                  <ReferenceArea y1={130} y2={200} fill="#ef4444" fillOpacity={0.15} label={{ value: 'High', position: 'insideTopRight', fill: '#dc2626', fontSize: 11, fontWeight: 600 }} />
+                  <ReferenceArea y1={0} y2={120} fill="#10b981" fillOpacity={0.15} label={{ value: 'Normal', position: 'insideTopRight', fill: '#059669', fontSize: 9, fontWeight: 600 }} />
+                  <ReferenceArea y1={120} y2={130} fill="#f59e0b" fillOpacity={0.2} label={{ value: 'Elevated', position: 'insideTopRight', fill: '#d97706', fontSize: 9, fontWeight: 600 }} />
+                  <ReferenceArea y1={130} y2={200} fill="#ef4444" fillOpacity={0.15} label={{ value: 'High', position: 'insideTopRight', fill: '#dc2626', fontSize: 9, fontWeight: 600 }} />
                   
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6b7280"
                   />
                   <YAxis 
                     domain={[60, 180]}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6b7280"
-                    label={{ value: 'mmHg', angle: -90, position: 'insideLeft', style: { fontSize: 12 } }}
+                    width={35}
+                    label={{ value: 'mmHg', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend 
@@ -382,47 +388,48 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
                     type="monotone" 
                     dataKey="systolic" 
                     stroke="#a855f7" 
-                    strokeWidth={4}
-                    dot={{ fill: '#a855f7', strokeWidth: 2, r: 7 }}
-                    activeDot={{ r: 9 }}
+                    strokeWidth={3}
+                    dot={{ fill: '#a855f7', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
                     name="Systolic"
                   />
                   <Line 
                     type="monotone" 
                     dataKey="diastolic" 
                     stroke="#ec4899" 
-                    strokeWidth={4}
+                    strokeWidth={3}
                     strokeDasharray="5 5"
-                    dot={{ fill: '#ec4899', strokeWidth: 2, r: 7 }}
-                    activeDot={{ r: 9 }}
+                    dot={{ fill: '#ec4899', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
                     name="Diastolic"
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-80 flex items-center justify-center bg-gray-50 rounded-xl">
-              <p className="text-gray-500">No after-activity readings in this time period</p>
+            <div className="h-56 md:h-80 flex items-center justify-center bg-gray-50 rounded-xl">
+              <p className="text-sm md:text-base text-gray-500">No after-activity readings in this time period</p>
             </div>
           )}
         </div>
 
         {/* After Activity Readings - Heart Rate Chart */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-bold text-orange-600 flex items-center gap-2">
-              <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 md:mb-4">
+            <h4 className="text-base md:text-lg font-bold text-orange-600 flex items-center gap-2">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
               </svg>
-              After Activity Readings - Heart Rate
+              <span className="hidden sm:inline">After Activity Readings - Heart Rate</span>
+              <span className="sm:hidden">Activity Heart Rate</span>
             </h4>
-            <span className="text-sm text-gray-500">{afterActivityData.length} data points</span>
+            <span className="text-xs md:text-sm text-gray-500">{afterActivityData.length} points</span>
           </div>
           
           {afterActivityData.length > 0 ? (
-            <div className="h-80">
+            <div className="h-56 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={afterActivityData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={afterActivityData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   
                   {/* Reference Areas for Heart Rate */}
@@ -431,14 +438,15 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
                   
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#6b7280"
                   />
                   <YAxis 
                     domain={[30, 120]}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     stroke="#f97316"
-                    label={{ value: 'BPM', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#f97316' } }}
+                    width={35}
+                    label={{ value: 'BPM', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: '#f97316' } }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend 
@@ -449,9 +457,9 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
                     type="monotone" 
                     dataKey="bpm" 
                     stroke="#ef4444" 
-                    strokeWidth={4}
-                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 7 }}
-                    activeDot={{ r: 9 }}
+                    strokeWidth={3}
+                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 7 }}
                     name="Resting BPM"
                   />
                   {afterActivityData.some(d => d.maxBpm) && (
@@ -459,10 +467,10 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
                       type="monotone" 
                       dataKey="maxBpm" 
                       stroke="#f97316" 
-                      strokeWidth={4}
+                      strokeWidth={3}
                       strokeDasharray="5 5"
-                      dot={{ fill: '#f97316', strokeWidth: 2, r: 7 }}
-                      activeDot={{ r: 9 }}
+                      dot={{ fill: '#f97316', strokeWidth: 2, r: 5 }}
+                      activeDot={{ r: 7 }}
                       name="Peak BPM During Walk"
                     />
                   )}
@@ -470,26 +478,26 @@ export default function BloodPressureCharts({ readings, onFilteredReadingsChange
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-80 flex items-center justify-center bg-gray-50 rounded-xl">
-              <p className="text-gray-500">No after-activity readings in this time period</p>
+            <div className="h-56 md:h-80 flex items-center justify-center bg-gray-50 rounded-xl">
+              <p className="text-sm md:text-base text-gray-500">No after-activity readings in this time period</p>
             </div>
           )}
         </div>
 
         {/* Legend for Reference Zones */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Blood Pressure Categories:</p>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 bg-opacity-30 border border-green-500 rounded"></div>
+        <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-200">
+          <p className="text-xs md:text-sm font-semibold text-gray-700 mb-2 md:mb-3">Blood Pressure Categories:</p>
+          <div className="flex flex-wrap gap-3 md:gap-4 text-xs md:text-sm">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-green-500 bg-opacity-30 border border-green-500 rounded"></div>
               <span className="text-gray-600">Normal (&lt;120)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-yellow-500 bg-opacity-30 border border-yellow-500 rounded"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-yellow-500 bg-opacity-30 border border-yellow-500 rounded"></div>
               <span className="text-gray-600">Elevated (120-130)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 bg-opacity-30 border border-red-500 rounded"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-red-500 bg-opacity-30 border border-red-500 rounded"></div>
               <span className="text-gray-600">High (&gt;130)</span>
             </div>
           </div>

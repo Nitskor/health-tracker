@@ -373,7 +373,7 @@ export default function BloodPressurePage() {
 
         {/* Charts Section */}
         {readings.length > 0 && (
-          <div className="mb-6 md:mb-8 -mx-4 sm:mx-0">
+          <div className="mb-4 md:mb-8 -mx-4 sm:mx-0">
             <Suspense fallback={
               <div className="bg-white rounded-lg shadow-md p-4 md:p-6 animate-pulse">
                 <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
@@ -395,24 +395,24 @@ export default function BloodPressurePage() {
         )}
 
         {/* Readings List */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-none sm:rounded-xl md:rounded-2xl shadow-xl border-y sm:border border-gray-100 -mx-4 sm:mx-0">
+          <div className="p-3 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 md:gap-4 mb-4 md:mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
                   Recent Readings
                 </h2>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs md:text-sm text-gray-600">
                   {filteredReadings.length > 0 ? filteredReadings.length : readings.length} total readings
                 </p>
               </div>
-              <div className="flex gap-3 text-sm">
-                <span className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <div className="flex gap-2 md:gap-3 text-xs md:text-sm">
+                <span className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-blue-500 rounded-full"></div>
                   <span className="font-medium text-blue-700">Normal</span>
                 </span>
-                <span className="flex items-center gap-2 px-3 py-2 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-purple-500 rounded-full"></div>
                   <span className="font-medium text-purple-700">After Activity</span>
                 </span>
               </div>
@@ -425,15 +425,15 @@ export default function BloodPressurePage() {
                 No readings found for the selected filters. Try adjusting your time period or reading type.
               </div>
             ) : (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-8">
                 {/* Normal Readings Table */}
                 <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h4 className="text-lg font-bold text-blue-600 flex items-center gap-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <div className="mb-3 md:mb-4 flex items-center justify-between">
+                    <h4 className="text-base md:text-lg font-bold text-blue-600 flex items-center gap-2">
+                      <div className="w-3 h-3 md:w-4 md:h-4 bg-blue-500 rounded-full"></div>
                       Normal Readings
                     </h4>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs md:text-sm text-gray-500">
                       {groupedReadings.flatMap(g => g.readings).filter(r => r.readingType === 'normal').length} readings
                     </span>
                   </div>
@@ -611,12 +611,12 @@ export default function BloodPressurePage() {
 
                 {/* After Activity Readings Table */}
                 <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h4 className="text-lg font-bold text-purple-600 flex items-center gap-2">
-                      <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+                  <div className="mb-3 md:mb-4 flex items-center justify-between">
+                    <h4 className="text-base md:text-lg font-bold text-purple-600 flex items-center gap-2">
+                      <div className="w-3 h-3 md:w-4 md:h-4 bg-purple-500 rounded-full"></div>
                       After Activity Readings
                     </h4>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs md:text-sm text-gray-500">
                       {groupedReadings.flatMap(g => g.readings).filter(r => r.readingType === 'after_activity').length} readings
                     </span>
                   </div>

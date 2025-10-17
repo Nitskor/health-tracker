@@ -193,7 +193,7 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
                 type="number"
                 id="walkDuration"
                 value={formData.walkDuration || ''}
-                onChange={(e) => handleInputChange('walkDuration', parseInt(e.target.value) || undefined)}
+                onChange={(e) => handleInputChange('walkDuration', e.target.value ? parseInt(e.target.value) : '')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50 text-gray-900"
                 placeholder="15"
                 min="1"
@@ -209,7 +209,7 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
                 type="number"
                 id="maxBpmDuringWalk"
                 value={formData.maxBpmDuringWalk || ''}
-                onChange={(e) => handleInputChange('maxBpmDuringWalk', parseInt(e.target.value) || undefined)}
+                onChange={(e) => handleInputChange('maxBpmDuringWalk', e.target.value ? parseInt(e.target.value) : '')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50 text-gray-900"
                 placeholder="80"
                 min="30"

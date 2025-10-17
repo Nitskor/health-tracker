@@ -14,7 +14,6 @@ import {
   Bar
 } from 'recharts';
 import { WeightReading, WeightStats } from '@/types/weight';
-import { formatWeight } from '@/lib/weight-utils';
 
 interface WeightChartsProps {
   readings: WeightReading[];
@@ -22,7 +21,7 @@ interface WeightChartsProps {
   onFilteredReadingsChange?: (filteredReadings: WeightReading[]) => void;
 }
 
-export default function WeightCharts({ readings, stats, onFilteredReadingsChange }: WeightChartsProps) {
+export default function WeightCharts({ readings, onFilteredReadingsChange }: WeightChartsProps) {
   const [selectedChart, setSelectedChart] = useState<'trend' | 'comparison'>('trend');
   const [timeFilter, setTimeFilter] = useState<'7' | '30' | '90' | 'custom'>('30');
   const [customDateRange, setCustomDateRange] = useState<{ start: string; end: string }>({
@@ -141,13 +140,13 @@ export default function WeightCharts({ readings, stats, onFilteredReadingsChange
     ];
   }, [readings, timeFilter, customDateRange]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ color: string; value: number; name: string }>; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-800">{label}</p>
           <div className="space-y-1">
-            {payload.map((entry: any, index: number) => (
+            {payload.map((entry, index: number) => (
               <div key={index} className="flex items-center space-x-2">
                 <div
                   className="w-3 h-3 rounded-sm"

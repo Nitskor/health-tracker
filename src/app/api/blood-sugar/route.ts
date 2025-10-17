@@ -4,7 +4,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 // GET - Retrieve all blood sugar readings for the authenticated user
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { userId } = await auth();
     
@@ -132,15 +132,15 @@ export async function PUT(request: NextRequest) {
     let objectId;
     try {
       objectId = new ObjectId(_id);
-    } catch (error) {
-      console.error('Invalid ObjectId format:', _id, error);
+    } catch {
+      console.error('Invalid ObjectId format:', _id);
       return NextResponse.json(
         { error: 'Invalid reading ID format' },
         { status: 400 }
       );
     }
 
-    const updateData: any = {
+    const updateData: Record<string, Date | number | string> = {
       updatedAt: new Date(),
     };
 

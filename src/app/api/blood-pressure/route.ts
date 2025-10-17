@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getDatabase } from '@/lib/mongodb';
-import { BloodPressureReading, BloodPressureFormData } from '@/types/blood-pressure';
+import { BloodPressureReading, BloodPressureFormData, ReadingType } from '@/types/blood-pressure';
 import { ObjectId } from 'mongodb';
 
 export async function POST(request: NextRequest) {
@@ -91,9 +91,9 @@ export async function GET(request: NextRequest) {
     const collection = db.collection<BloodPressureReading>('blood_pressure');
 
     // Build query
-    const query: any = { userId };
+    const query: { userId: string; readingType?: ReadingType } = { userId };
     if (type) {
-      query.readingType = type;
+      query.readingType = type as ReadingType;
     }
 
     const readings = await collection
@@ -178,16 +178,16 @@ export async function PUT(request: NextRequest) {
     let objectId;
     try {
       objectId = new ObjectId(id);
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: 'Invalid reading ID format' }, { status: 400 });
     }
     
-    const existingReading = await collection.findOne({ _id: objectId as any, userId });
+    const existingReading = await collection.findOne({ _id: objectId as unknown as string, userId } as Record<string, unknown>);
     if (!existingReading) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
     }
 
-    const updateData: any = {
+    const updateData: Partial<BloodPressureReading> = {
       systolic: Number(systolic),
       diastolic: Number(diastolic),
       bpm: Number(bpm),
@@ -203,12 +203,12 @@ export async function PUT(request: NextRequest) {
       if (maxBpmDuringWalk) updateData.maxBpmDuringWalk = Number(maxBpmDuringWalk);
     } else {
       // Remove activity fields if changing from after_activity to normal
-      updateData.walkDuration = null;
-      updateData.maxBpmDuringWalk = null;
+      updateData.walkDuration = undefined;
+      updateData.maxBpmDuringWalk = undefined;
     }
 
     const result = await collection.updateOne(
-      { _id: objectId as any, userId },
+      { _id: objectId as unknown as string, userId } as Record<string, unknown>,
       { $set: updateData }
     );
 
@@ -247,11 +247,11 @@ export async function DELETE(request: NextRequest) {
     let objectId;
     try {
       objectId = new ObjectId(id);
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: 'Invalid reading ID format' }, { status: 400 });
     }
     
-    const result = await collection.deleteOne({ _id: objectId as any, userId });
+    const result = await collection.deleteOne({ _id: objectId as unknown as string, userId } as Record<string, unknown>);
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });

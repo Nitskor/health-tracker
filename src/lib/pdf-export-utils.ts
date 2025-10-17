@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { BloodPressureReading } from '@/types/blood-pressure';
 import { WeightReading } from '@/types/weight';
 import { BloodSugarReading, ReadingType } from '@/types/blood-sugar';
@@ -42,7 +41,7 @@ async function createSimpleChart(
   ctx.fillRect(chartX, chartY, chartWidth, chartHeight);
 
   // Determine Y-axis range
-  let scaledMin, scaledMax, scaledRange;
+  let scaledMin: number, scaledMax: number, scaledRange: number;
   
   if (yAxisConfig) {
     // Use provided Y-axis configuration (for BP charts)
@@ -146,7 +145,8 @@ async function createSimpleChart(
   return canvas.toDataURL('image/png');
 }
 
-// Helper function to create blood pressure trend chart data
+// Helper function to create blood pressure trend chart data (unused but kept for future use)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createBloodPressureTrendChart(readings: BloodPressureReading[]): Promise<string> {
   // Group readings by date
   const groupedByDate: { [key: string]: { normal: BloodPressureReading[], afterActivity: BloodPressureReading[] } } = {};
@@ -181,7 +181,8 @@ async function createBloodPressureTrendChart(readings: BloodPressureReading[]): 
   return await createSimpleChart('Blood Pressure Trends Over Time', chartData);
 }
 
-// Helper function to create blood pressure comparison chart
+// Helper function to create blood pressure comparison chart (unused but kept for future use)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createBloodPressureComparisonChart(readings: BloodPressureReading[]): Promise<string> {
   const normalReadings = readings.filter(r => r.readingType === 'normal');
   const afterActivityReadings = readings.filter(r => r.readingType === 'after_activity');
@@ -403,7 +404,7 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
   let yPosition = 20;
 
   // Helper function to add text with alignment
-  const addText = (text: string, x: number, y: number, options: any = {}) => {
+  const addText = (text: string, x: number, y: number, options: { fontSize?: number; color?: string; align?: 'left' | 'center' | 'right'; bold?: boolean } = {}) => {
     pdf.setFontSize(options.fontSize || 11);
     pdf.setTextColor(options.color || '#000000');
     
@@ -502,7 +503,6 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
     yPosition += 5;
 
     // Table headers with BPM column
-    const colWidths = [30, 20, 25, 25, 20, 70];
     const colX = [15, 45, 65, 90, 115, 135];
     
     pdf.setFont('helvetica', 'bold');
@@ -617,7 +617,6 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
     yPosition += 5;
 
     // Table headers with activity columns
-    const colWidths = [25, 18, 22, 22, 18, 18, 18, 55];
     const colX = [15, 40, 58, 80, 102, 120, 138, 156];
     
     pdf.setFont('helvetica', 'bold');
@@ -784,7 +783,6 @@ export async function exportWeightToPDF(readings: WeightReading[]): Promise<void
   }
 
   // Table headers with better alignment
-  const colWidths = [40, 30, 30, 80];
   const colX = [15, 55, 85, 115];
   
   pdf.setFont('helvetica', 'bold');
@@ -975,7 +973,6 @@ export async function exportBloodSugarToPDF(readings: BloodSugarReading[]): Prom
     }
 
     // Table headers with better alignment
-    const colWidths = [35, 25, 30, 70];
     const colX = [15, 50, 75, 105];
     
     pdf.setFont('helvetica', 'bold');

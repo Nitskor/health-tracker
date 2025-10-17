@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { BloodSugarReading, ReadingType } from '@/types/blood-sugar';
 import { getReadingTypeColor, getReadingTypeLabel } from '@/lib/blood-sugar-utils';
@@ -65,18 +65,18 @@ export default function BloodSugarCharts({ readings, onFilteredReadingsChange }:
     if (filteredReadings.length === 0) return [];
 
     // Group by date
-    const groupedByDate = filteredReadings.reduce((acc: any, reading) => {
+    const groupedByDate = filteredReadings.reduce((acc: Record<string, typeof filteredReadings>, reading) => {
       const date = new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       if (!acc[date]) {
         acc[date] = [];
       }
       acc[date].push(reading);
       return acc;
-    }, {});
+    }, {} as Record<string, typeof filteredReadings>);
 
-    return Object.entries(groupedByDate).map(([date, readings]: [string, any]) => {
+    return Object.entries(groupedByDate).map(([date, readings]: [string, typeof filteredReadings]) => {
       const avgGlucose = Math.round(
-        readings.reduce((sum: number, r: any) => sum + r.glucose, 0) / readings.length
+        readings.reduce((sum: number, r) => sum + r.glucose, 0) / readings.length
       );
 
       return {
@@ -257,7 +257,7 @@ export default function BloodSugarCharts({ readings, onFilteredReadingsChange }:
                     <input
                       type="date"
                       value={customDateRange?.start || ''}
-                      onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value } as any)}
+                      onChange={(e) => setCustomDateRange({ start: e.target.value, end: customDateRange?.end || '' })}
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded text-gray-900 font-medium"
                       style={{ colorScheme: 'light' }}
                     />
@@ -267,7 +267,7 @@ export default function BloodSugarCharts({ readings, onFilteredReadingsChange }:
                     <input
                       type="date"
                       value={customDateRange?.end || ''}
-                      onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value } as any)}
+                      onChange={(e) => setCustomDateRange({ start: customDateRange?.start || '', end: e.target.value })}
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded text-gray-900 font-medium"
                       style={{ colorScheme: 'light' }}
                     />

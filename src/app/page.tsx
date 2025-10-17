@@ -254,7 +254,7 @@ export default function Home() {
               <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="text-4xl font-bold text-blue-600 mb-2">1</div>
                 <p className="text-gray-700 font-medium mb-1">Add Your First Reading</p>
-                <p className="text-sm text-gray-500">Click "Quick Add" above</p>
+                <p className="text-sm text-gray-500">Click &ldquo;Quick Add&rdquo; above</p>
               </div>
               <div className="text-center p-6 bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="text-4xl font-bold text-green-600 mb-2">2</div>

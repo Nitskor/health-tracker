@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       dateFilter.setDate(dateFilter.getDate() - 30);
     }
 
-    const query: any = { userId };
+    const query: { userId: string; timestamp?: { $gte: Date } } = { userId };
     if (dateFilter) {
       query.timestamp = { $gte: dateFilter };
     }
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (readings.length > 0) {
-      const glucoseValues = readings.map((r: any) => r.glucose);
+      const glucoseValues = readings.map((r) => (r as unknown as { glucose: number }).glucose);
       stats.averageGlucose = Math.round(
         glucoseValues.reduce((sum: number, val: number) => sum + val, 0) / glucoseValues.length
       );
@@ -63,9 +63,10 @@ export async function GET(request: NextRequest) {
       stats.highestGlucose = Math.max(...glucoseValues);
 
       // Count by type
-      readings.forEach((reading: any) => {
-        if (reading.readingType in stats.readingsByType) {
-          stats.readingsByType[reading.readingType as keyof typeof stats.readingsByType]++;
+      readings.forEach((reading) => {
+        const typedReading = reading as unknown as { readingType: string };
+        if (typedReading.readingType in stats.readingsByType) {
+          stats.readingsByType[typedReading.readingType as keyof typeof stats.readingsByType]++;
         }
       });
     }

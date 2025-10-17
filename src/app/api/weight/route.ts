@@ -117,11 +117,11 @@ export async function PUT(request: NextRequest) {
     let objectId;
     try {
       objectId = new ObjectId(id);
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: 'Invalid reading ID format' }, { status: 400 });
     }
     
-    const existingReading = await collection.findOne({ _id: objectId as any, userId });
+    const existingReading = await collection.findOne({ _id: objectId as unknown as string, userId } as Record<string, unknown>);
     if (!existingReading) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
     }
@@ -134,7 +134,7 @@ export async function PUT(request: NextRequest) {
     };
 
     const result = await collection.updateOne(
-      { _id: objectId as any, userId },
+      { _id: objectId as unknown as string, userId } as Record<string, unknown>,
       { $set: updateData }
     );
 
@@ -173,11 +173,11 @@ export async function DELETE(request: NextRequest) {
     let objectId;
     try {
       objectId = new ObjectId(id);
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: 'Invalid reading ID format' }, { status: 400 });
     }
     
-    const result = await collection.deleteOne({ _id: objectId as any, userId });
+    const result = await collection.deleteOne({ _id: objectId as unknown as string, userId } as Record<string, unknown>);
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });

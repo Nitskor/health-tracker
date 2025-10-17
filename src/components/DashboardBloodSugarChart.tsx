@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { BloodSugarReading } from '@/types/blood-sugar';
-import { getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-sugar-utils';
+import { getReadingTypeLabel } from '@/lib/blood-sugar-utils';
 
 export default function DashboardBloodSugarChart() {
   const [recentReadings, setRecentReadings] = useState<BloodSugarReading[]>([]);

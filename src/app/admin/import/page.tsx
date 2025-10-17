@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
 
 const readings = [
   // Daily normal readings (Aug 18-26, Sept 16-24)
@@ -352,9 +353,9 @@ export default function ImportPage() {
 
           {/* Back Link */}
           <div className="mt-8 text-center">
-            <a href="/" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium">
               ← Back to Dashboard
-            </a>
+            </Link>
           </div>
         </div>
       </div>

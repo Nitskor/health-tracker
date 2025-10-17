@@ -31,7 +31,7 @@ interface BloodPressureChartsProps {
   onFilteredReadingsChange?: (filteredReadings: BloodPressureReading[]) => void;
 }
 
-export default function BloodPressureCharts({ readings, stats, onFilteredReadingsChange }: BloodPressureChartsProps) {
+export default function BloodPressureCharts({ readings, onFilteredReadingsChange }: BloodPressureChartsProps) {
   const [timeFilter, setTimeFilter] = useState<'7' | '30' | '90' | 'custom'>('30');
   const [customDateRange, setCustomDateRange] = useState<{ start: string; end: string }>({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -114,7 +114,7 @@ export default function BloodPressureCharts({ readings, stats, onFilteredReading
     }
   }, [filteredReadings, onFilteredReadingsChange]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ payload: { systolic: number; diastolic: number; bpm: number; maxBpm?: number; walkDuration?: number } }>; label?: string }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

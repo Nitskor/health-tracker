@@ -7,7 +7,7 @@ import Link from 'next/link';
 import BloodPressureForm from '@/components/BloodPressureForm';
 import Modal from '@/components/Modal';
 import { BloodPressureReading, BloodPressureStats } from '@/types/blood-pressure';
-import { formatBloodPressure, getBloodPressureCategory, getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-pressure-utils';
+import { getBloodPressureCategory } from '@/lib/blood-pressure-utils';
 import { exportBloodPressureToPDF } from '@/lib/pdf-export-utils';
 
 // Lazy load the charts component for better initial load performance

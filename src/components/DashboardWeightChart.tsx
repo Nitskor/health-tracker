@@ -11,13 +11,30 @@ export default function DashboardWeightChart() {
 
   // Memoize chart data processing - MUST be before conditional returns
   const chartData = useMemo(() => {
-    return recentReadings
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      .map(reading => ({
-        date: new Date(reading.timestamp).toLocaleDateString(),
-        weight: reading.weight,
-        formattedWeight: formatWeight(reading.weight)
-      }));
+    // Group readings by date and calculate daily averages
+    const groupedByDate = recentReadings.reduce((acc, reading) => {
+      const date = new Date(reading.timestamp);
+      const dateKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      if (!acc[dateKey]) {
+        acc[dateKey] = { weights: [], date: dateKey, timestamp: date.getTime() };
+      }
+      acc[dateKey].weights.push(reading.weight);
+      return acc;
+    }, {} as Record<string, { weights: number[], date: string, timestamp: number }>);
+
+    // Calculate averages and sort by actual date
+    return Object.values(groupedByDate)
+      .map(group => {
+        const avgWeight = group.weights.reduce((sum, val) => sum + val, 0) / group.weights.length;
+        return {
+          date: group.date,
+          weight: Math.round(avgWeight * 10) / 10,
+          formattedWeight: formatWeight(Math.round(avgWeight * 10) / 10),
+          timestamp: group.timestamp
+        };
+      })
+      .sort((a, b) => a.timestamp - b.timestamp);
   }, [recentReadings]);
 
   useEffect(() => {

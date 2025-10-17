@@ -10,14 +10,28 @@ export default function DashboardChart() {
 
   // Memoize chart data processing - MUST be before conditional returns
   const chartData = useMemo(() => {
-    return recentReadings
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      .map(reading => ({
-        date: new Date(reading.timestamp).toLocaleDateString(),
-        systolic: reading.systolic,
-        diastolic: reading.diastolic,
-        type: reading.readingType
-      }));
+    // Group readings by date and calculate daily averages
+    const groupedByDate = recentReadings.reduce((acc, reading) => {
+      const date = new Date(reading.timestamp);
+      const dateKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      if (!acc[dateKey]) {
+        acc[dateKey] = { systolic: [], diastolic: [], date: dateKey, timestamp: date.getTime() };
+      }
+      acc[dateKey].systolic.push(reading.systolic);
+      acc[dateKey].diastolic.push(reading.diastolic);
+      return acc;
+    }, {} as Record<string, { systolic: number[], diastolic: number[], date: string, timestamp: number }>);
+
+    // Calculate averages and sort by actual date
+    return Object.values(groupedByDate)
+      .map(group => ({
+        date: group.date,
+        systolic: Math.round(group.systolic.reduce((sum, val) => sum + val, 0) / group.systolic.length),
+        diastolic: Math.round(group.diastolic.reduce((sum, val) => sum + val, 0) / group.diastolic.length),
+        timestamp: group.timestamp
+      }))
+      .sort((a, b) => a.timestamp - b.timestamp);
   }, [recentReadings]);
 
   useEffect(() => {
@@ -79,7 +93,6 @@ export default function DashboardChart() {
             <XAxis 
               dataKey="date" 
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             />
             <YAxis 
               tick={{ fontSize: 12 }}
@@ -94,9 +107,7 @@ export default function DashboardChart() {
                       <p className="font-semibold text-gray-800">{label}</p>
                       <p className="text-blue-600">Systolic: {data.systolic} mmHg</p>
                       <p className="text-purple-600">Diastolic: {data.diastolic} mmHg</p>
-                      <p className="text-sm text-gray-600">
-                        Type: {data.type === 'normal' ? 'Normal' : 'After Activity'}
-                      </p>
+                      <p className="text-xs text-gray-500 mt-1">Daily average</p>
                     </div>
                   );
                 }

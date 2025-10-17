@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import BloodSugarForm from '@/components/BloodSugarForm';
+import Modal from '@/components/Modal';
 import BloodSugarCharts from '@/components/BloodSugarCharts';
 import { BloodSugarReading, BloodSugarStats } from '@/types/blood-sugar';
-import { formatGlucose, getBloodSugarCategory, getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-sugar-utils';
+import { getBloodSugarCategory, getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-sugar-utils';
 import { exportBloodSugarToPDF } from '@/lib/pdf-export-utils';
 
 export default function BloodSugarPage() {
@@ -144,32 +146,36 @@ export default function BloodSugarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <div className="flex items-center space-x-4 mb-2">
-                <a 
+              <div className="flex items-center space-x-4 mb-3">
+                <Link 
                   href="/"
-                  className="text-green-600 hover:text-green-800 transition-colors"
+                  className="group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
                   title="Back to Dashboard"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-green-600 group-hover:text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
-                </a>
-                <h1 className="text-4xl font-bold text-gray-900">Blood Sugar Tracker</h1>
+                </Link>
+                <div>
+                  <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-1">
+                    Blood Sugar
+                  </h1>
+                  <p className="text-lg text-gray-600">Monitor glucose levels across readings</p>
+                </div>
               </div>
-              <p className="text-gray-600">Monitor your blood glucose levels and track trends</p>
             </div>
             {user && (
-              <div className="text-right">
-                <p className="text-lg font-semibold text-gray-800">
-                  Welcome, {user.firstName} {user.lastName}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-100">
+                <p className="text-sm text-gray-500 mb-1">Welcome back</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {user.firstName} {user.lastName}
                 </p>
-                <p className="text-sm text-gray-600">Track your health metrics</p>
               </div>
             )}
           </div>
@@ -177,84 +183,106 @@ export default function BloodSugarPage() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Average Glucose Stats */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-green-600 mb-2">Average Glucose</h3>
-              <div className="space-y-1">
-                <p className="text-xs text-gray-600">Last 30 days: {stats.totalReadings} readings</p>
-                {stats.totalReadings > 0 && (
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Average Glucose</h3>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-green-100 text-sm">Last 30 days</p>
+                {stats.totalReadings > 0 ? (
                   <>
-                    <p className="text-sm font-medium text-gray-800">
-                      {stats.averageGlucose} mg/dL
+                    <p className="text-4xl font-bold">
+                      {stats.averageGlucose} <span className="text-2xl">mg/dL</span>
                     </p>
-                    <span className="text-xs text-gray-500">
+                    <p className="text-green-100 text-sm">
                       Range: {stats.lowestGlucose} - {stats.highestGlucose} mg/dL
-                    </span>
+                    </p>
+                    <p className="text-green-100 text-sm mt-2">{stats.totalReadings} readings</p>
                   </>
+                ) : (
+                  <p className="text-2xl font-bold">No readings yet</p>
                 )}
               </div>
             </div>
 
             {/* Readings by Type Stats */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-green-600 mb-2">Readings by Type</h3>
-              <div className="space-y-1 text-xs text-gray-600">
-                <p>Fasting: {stats.readingsByType.fasting}</p>
-                <p>Before Meal: {stats.readingsByType.before_meal}</p>
-                <p>After Meal: {stats.readingsByType.after_meal}</p>
-                <p>Bedtime: {stats.readingsByType.bedtime}</p>
-                <p>Random: {stats.readingsByType.random}</p>
+            <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Readings by Type</h3>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                </div>
+              </div>
+              <div className="space-y-1.5 text-sm text-teal-50">
+                <div className="flex justify-between items-center">
+                  <span>Fasting:</span>
+                  <span className="font-semibold text-white">{stats.readingsByType.fasting}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Before Meal:</span>
+                  <span className="font-semibold text-white">{stats.readingsByType.before_meal}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>After Meal:</span>
+                  <span className="font-semibold text-white">{stats.readingsByType.after_meal}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Bedtime:</span>
+                  <span className="font-semibold text-white">{stats.readingsByType.bedtime}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Random:</span>
+                  <span className="font-semibold text-white">{stats.readingsByType.random}</span>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="mb-6 flex flex-wrap gap-3">
+        <div className="mb-8 flex flex-wrap gap-4">
           <button
             onClick={() => {
               setEditingReading(null);
               setShowForm(!showForm);
             }}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
           >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             {showForm ? 'Close Form' : 'Add New Reading'}
           </button>
           {readings.length > 0 && (
             <button
               onClick={handleExportData}
-              className="bg-white border-2 border-green-600 text-green-600 px-6 py-2 rounded-lg hover:bg-green-50 transition-colors font-medium shadow-sm"
+              className="bg-white border-2 border-green-200 text-green-600 px-8 py-3 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2"
             >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
               Export PDF Report
             </button>
           )}
         </div>
 
         {/* Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {editingReading ? 'Edit Reading' : 'Add New Reading'}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingReading(null);
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <BloodSugarForm onSuccess={handleFormSuccess} editingReading={editingReading} />
-            </div>
-          </div>
-        )}
+        <Modal 
+          isOpen={showForm} 
+          onClose={() => { setShowForm(false); setEditingReading(null); }}
+          title={editingReading ? 'Edit Reading' : 'Add New Reading'}
+        >
+          <BloodSugarForm onSuccess={handleFormSuccess} editingReading={editingReading} />
+        </Modal>
 
         {/* Charts */}
         {readings.length > 0 && (
@@ -267,19 +295,28 @@ export default function BloodSugarPage() {
         )}
 
         {/* Recent Readings */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Readings</h2>
-          </div>
-          <div className="p-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
+          <div className="p-6 sm:p-8">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">Recent Readings</h2>
+              <p className="text-sm text-gray-600">{Object.keys(groupedReadings).length} days with readings</p>
+            </div>
+            <div>
             {Object.keys(groupedReadings).length > 0 ? (
               <div className="space-y-6">
                 {Object.entries(groupedReadings).map(([date, dateReadings]) => (
-                  <div key={date}>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">
-                      {date}
-                    </h3>
-                    <div className="space-y-3">
+                  <div key={date} className="space-y-4">
+                    {/* Date Header */}
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                      <div className="px-5 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
+                        <h3 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
+                          {date}
+                        </h3>
+                      </div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                    </div>
+                    <div className="space-y-4">
                       {dateReadings.map((reading) => {
                         const category = getBloodSugarCategory(reading.glucose, reading.readingType);
                         const time = new Date(reading.timestamp).toLocaleTimeString('en-US', {
@@ -291,63 +328,65 @@ export default function BloodSugarPage() {
                         return (
                           <div
                             key={reading._id}
-                            className="flex items-start justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            className="border-2 border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:border-gray-200 transition-all duration-300 bg-white hover:-translate-y-0.5"
                           >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="text-sm font-medium text-gray-500">{time}</span>
-                                <span
-                                  className="px-2 py-1 text-xs font-medium rounded"
-                                  style={{
-                                    backgroundColor: getReadingTypeColor(reading.readingType) + '20',
-                                    color: getReadingTypeColor(reading.readingType),
-                                  }}
-                                >
-                                  {getReadingTypeLabel(reading.readingType)}
-                                </span>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <span className="text-sm font-medium text-gray-500">{time}</span>
+                                  <span
+                                    className="px-2 py-1 text-xs font-medium rounded"
+                                    style={{
+                                      backgroundColor: getReadingTypeColor(reading.readingType) + '20',
+                                      color: getReadingTypeColor(reading.readingType),
+                                    }}
+                                  >
+                                    {getReadingTypeLabel(reading.readingType)}
+                                  </span>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-2xl font-bold text-green-600">
+                                    {reading.glucose}
+                                  </span>
+                                  <span className="text-sm text-gray-500">mg/dL</span>
+                                  <span
+                                    className={`ml-2 px-2 py-1 text-xs rounded ${
+                                      category === 'Normal'
+                                        ? 'bg-green-50 text-green-700'
+                                        : category === 'Low'
+                                        ? 'bg-yellow-50 text-yellow-700'
+                                        : category === 'Prediabetes' || category === 'High'
+                                        ? 'bg-orange-50 text-orange-700'
+                                        : 'bg-red-50 text-red-700'
+                                    }`}
+                                  >
+                                    {category}
+                                  </span>
+                                </div>
+                                {reading.notes && (
+                                  <p className="text-sm text-gray-600 mt-2">{reading.notes}</p>
+                                )}
                               </div>
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold text-green-600">
-                                  {reading.glucose}
-                                </span>
-                                <span className="text-sm text-gray-500">mg/dL</span>
-                                <span
-                                  className={`ml-2 px-2 py-1 text-xs rounded ${
-                                    category === 'Normal'
-                                      ? 'bg-green-50 text-green-700'
-                                      : category === 'Low'
-                                      ? 'bg-yellow-50 text-yellow-700'
-                                      : category === 'Prediabetes' || category === 'High'
-                                      ? 'bg-orange-50 text-orange-700'
-                                      : 'bg-red-50 text-red-700'
-                                  }`}
+                              <div className="flex gap-2 ml-4">
+                                <button
+                                  onClick={() => handleEditReading(reading)}
+                                  className="text-green-600 hover:text-green-700 p-2"
+                                  title="Edit"
                                 >
-                                  {category}
-                                </span>
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => setDeletingReading(reading)}
+                                  className="text-red-600 hover:text-red-700 p-2"
+                                  title="Delete"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
                               </div>
-                              {reading.notes && (
-                                <p className="text-sm text-gray-600 mt-2">{reading.notes}</p>
-                              )}
-                            </div>
-                            <div className="flex gap-2 ml-4">
-                              <button
-                                onClick={() => handleEditReading(reading)}
-                                className="text-green-600 hover:text-green-700 p-2"
-                                title="Edit"
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => setDeletingReading(reading)}
-                                className="text-red-600 hover:text-red-700 p-2"
-                                title="Delete"
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
                             </div>
                           </div>
                         );
@@ -361,6 +400,7 @@ export default function BloodSugarPage() {
                 No readings yet. Add your first reading to get started!
               </p>
             )}
+            </div>
           </div>
         </div>
 

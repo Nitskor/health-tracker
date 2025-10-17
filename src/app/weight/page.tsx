@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import WeightForm from '@/components/WeightForm';
+import Modal from '@/components/Modal';
 import WeightCharts from '@/components/WeightCharts';
 import { WeightReading, WeightStats } from '@/types/weight';
-import { formatWeight, getWeightChangeColor, getWeightChangeLabel } from '@/lib/weight-utils';
+import { formatWeight, getWeightChangeLabel } from '@/lib/weight-utils';
 import { exportWeightToPDF } from '@/lib/pdf-export-utils';
 
 export default function WeightPage() {
@@ -157,32 +159,36 @@ export default function WeightPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <div className="flex items-center space-x-4 mb-2">
-                <a 
+              <div className="flex items-center space-x-4 mb-3">
+                <Link 
                   href="/"
-                  className="text-purple-600 hover:text-purple-800 transition-colors"
+                  className="group flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
                   title="Back to Dashboard"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-purple-600 group-hover:text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
-                </a>
-                <h1 className="text-4xl font-bold text-gray-900">Weight Tracker</h1>
+                </Link>
+                <div>
+                  <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-1">
+                    Weight Tracker
+                  </h1>
+                  <p className="text-lg text-gray-600">Monitor weight trends over time</p>
+                </div>
               </div>
-              <p className="text-gray-600">Monitor your weight and track trends</p>
             </div>
             {user && (
-              <div className="text-right">
-                <p className="text-lg font-semibold text-gray-800">
-                  Welcome, {user.firstName} {user.lastName}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-100">
+                <p className="text-sm text-gray-500 mb-1">Welcome back</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {user.firstName} {user.lastName}
                 </p>
-                <p className="text-sm text-gray-600">Track your health metrics</p>
               </div>
             )}
           </div>
@@ -190,43 +196,58 @@ export default function WeightPage() {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Current Weight Stats */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-purple-600 mb-2">Current Weight</h3>
-              <div className="space-y-1">
-                <p className="text-xs text-gray-600">Last 30 days: {stats.count}</p>
-                {stats.count > 0 && (
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Average Weight</h3>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                  </svg>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-purple-100 text-sm">Last 30 days</p>
+                {stats.count > 0 ? (
                   <>
-                    <p className="text-sm font-medium text-gray-800">
-                      {formatWeight(stats.averageWeight)} avg
+                    <p className="text-4xl font-bold">
+                      {formatWeight(stats.averageWeight)}
                     </p>
-                    <span className="text-xs text-gray-500">
+                    <p className="text-purple-100 text-sm">
                       Range: {formatWeight(stats.minWeight)} - {formatWeight(stats.maxWeight)}
-                    </span>
+                    </p>
+                    <p className="text-purple-100 text-sm mt-2">{stats.count} readings</p>
                   </>
+                ) : (
+                  <p className="text-2xl font-bold">No readings yet</p>
                 )}
               </div>
             </div>
 
             {/* Weight Change Stats */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-semibold text-purple-600 mb-2">Weight Change</h3>
-              <div className="space-y-1">
-                <p className="text-xs text-gray-600">30-day change</p>
-                {stats.weightChange !== 0 && (
+            <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl shadow-xl p-6 text-white transform hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">30-Day Change</h3>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-pink-100 text-sm">Weight trend</p>
+                {stats.count > 0 && stats.weightChange !== 0 ? (
                   <>
-                    <p className={`text-sm font-medium ${
-                      getWeightChangeColor(stats.weightChange) === 'green' ? 'text-green-600' :
-                      getWeightChangeColor(stats.weightChange) === 'red' ? 'text-red-600' :
-                      'text-gray-600'
-                    }`}>
+                    <p className="text-4xl font-bold">
                       {getWeightChangeLabel(stats.weightChange)}
                     </p>
-                    <span className="text-xs text-gray-500">
-                      {stats.weightChange > 0 ? 'Weight gain' : 'Weight loss'}
-                    </span>
+                    <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium mt-2 backdrop-blur-sm">
+                      {stats.weightChange > 0 ? '↑ Weight gain' : '↓ Weight loss'}
+                    </div>
                   </>
+                ) : (
+                  <p className="text-2xl font-bold">No change yet</p>
                 )}
               </div>
             </div>
@@ -234,36 +255,38 @@ export default function WeightPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="mb-6 flex flex-wrap gap-3">
+        <div className="mb-8 flex flex-wrap gap-4">
           <button
             onClick={() => setShowForm(true)}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-sm"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
           >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             Add New Reading
           </button>
           <button
             onClick={handleExportData}
-            className="bg-white border-2 border-purple-600 text-purple-600 px-6 py-2 rounded-lg hover:bg-purple-50 transition-colors font-medium shadow-sm"
+            className="bg-white border-2 border-purple-200 text-purple-600 px-8 py-3 rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2"
           >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
             Export PDF Report
           </button>
         </div>
 
         {/* Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="max-w-md w-full">
-              <WeightForm 
-                onSuccess={handleFormSuccess}
-                onCancel={() => {
-                  setShowForm(false);
-                  setEditingReading(null);
-                }}
-                editingReading={editingReading}
-              />
-            </div>
-          </div>
-        )}
+        <Modal isOpen={showForm} onClose={() => { setShowForm(false); setEditingReading(null); }}>
+          <WeightForm 
+            onSuccess={handleFormSuccess}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingReading(null);
+            }}
+            editingReading={editingReading}
+          />
+        </Modal>
 
         {/* Charts Section */}
         {readings.length > 0 && (
@@ -277,12 +300,17 @@ export default function WeightPage() {
         )}
 
         {/* Readings List */}
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Recent Readings ({filteredReadings.length > 0 ? filteredReadings.length : readings.length})
-              </h2>
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100">
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                  Recent Readings
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {filteredReadings.length > 0 ? filteredReadings.length : readings.length} total readings
+                </p>
+              </div>
             </div>
             
             {loading ? (
@@ -330,20 +358,20 @@ export default function WeightPage() {
                     };
                     
                     return (
-                      <div key={dateKey} className="space-y-3">
+                      <div key={dateKey} className="space-y-4">
                         {/* Date Header */}
-                        <div className="flex items-center space-x-3">
-                          <div className="flex-1 h-px bg-gray-200"></div>
-                          <div className="px-4 py-2 bg-gray-100 rounded-full">
-                            <h3 className="text-sm font-semibold text-gray-700">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                          <div className="px-5 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-full border border-purple-200">
+                            <h3 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
                               {getRelativeDate(readingDate)}
                             </h3>
                           </div>
-                          <div className="flex-1 h-px bg-gray-200"></div>
+                          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
                         </div>
                         
                         {/* Readings for this date */}
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {dayReadings.map((reading) => {
                             const readingTime = new Date(reading.timestamp).toLocaleTimeString('en-US', { 
                               hour: '2-digit', 
@@ -352,7 +380,7 @@ export default function WeightPage() {
                             });
                             
                             return (
-                              <div key={reading._id} className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white">
+                              <div key={reading._id} className="border-2 border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:border-gray-200 transition-all duration-300 bg-white hover:-translate-y-0.5">
                                 <div className="flex justify-between items-start">
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-3 mb-3">
@@ -367,7 +395,7 @@ export default function WeightPage() {
                                           {readingTime}
                                         </p>
                                         {reading.notes && (
-                                          <p className="text-sm text-gray-600 mt-1 italic">"{reading.notes}"</p>
+                                          <p className="text-sm text-gray-600 mt-1 italic">&ldquo;{reading.notes}&rdquo;</p>
                                         )}
                                       </div>
                                       

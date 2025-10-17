@@ -11,13 +11,26 @@ export default function DashboardBloodSugarChart() {
 
   // Memoize chart data processing - MUST be before conditional returns
   const chartData = useMemo(() => {
-    return recentReadings
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      .map(reading => ({
-        date: new Date(reading.timestamp).toLocaleDateString(),
-        glucose: reading.glucose,
-        type: reading.readingType
-      }));
+    // Group readings by date and calculate daily averages
+    const groupedByDate = recentReadings.reduce((acc, reading) => {
+      const date = new Date(reading.timestamp);
+      const dateKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      
+      if (!acc[dateKey]) {
+        acc[dateKey] = { glucose: [], date: dateKey, timestamp: date.getTime() };
+      }
+      acc[dateKey].glucose.push(reading.glucose);
+      return acc;
+    }, {} as Record<string, { glucose: number[], date: string, timestamp: number }>);
+
+    // Calculate averages and sort by actual date
+    return Object.values(groupedByDate)
+      .map(group => ({
+        date: group.date,
+        glucose: Math.round(group.glucose.reduce((sum, val) => sum + val, 0) / group.glucose.length),
+        timestamp: group.timestamp
+      }))
+      .sort((a, b) => a.timestamp - b.timestamp);
   }, [recentReadings]);
 
   useEffect(() => {

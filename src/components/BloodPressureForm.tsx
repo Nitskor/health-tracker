@@ -13,11 +13,14 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
   const [formData, setFormData] = useState<BloodPressureFormData>({
     systolic: editingReading?.systolic || 0,
     diastolic: editingReading?.diastolic || 0,
+    bpm: editingReading?.bpm || 0,
     readingType: editingReading?.readingType || 'normal',
     timestamp: editingReading ? 
       new Date(editingReading.timestamp).toLocaleString('sv-SE').slice(0, 16) : 
       new Date().toLocaleString('sv-SE').slice(0, 16),
-    notes: editingReading?.notes || ''
+    notes: editingReading?.notes || '',
+    walkDuration: editingReading?.walkDuration || undefined,
+    maxBpmDuringWalk: editingReading?.maxBpmDuringWalk || undefined
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -63,9 +66,12 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
         setFormData({
           systolic: 0,
           diastolic: 0,
+          bpm: 0,
           readingType: 'normal',
           timestamp: new Date().toLocaleString('sv-SE').slice(0, 16),
-          notes: ''
+          notes: '',
+          walkDuration: undefined,
+          maxBpmDuringWalk: undefined
         });
       }
 
@@ -127,6 +133,24 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
           />
         </div>
 
+        {/* BPM (Heart Rate) Input */}
+        <div>
+          <label htmlFor="bpm" className="block text-sm font-medium text-gray-700 mb-1">
+            BPM (Heart Rate)
+          </label>
+          <input
+            type="number"
+            id="bpm"
+            value={formData.bpm || ''}
+            onChange={(e) => handleInputChange('bpm', parseInt(e.target.value) || 0)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-900"
+            placeholder="70"
+            min="30"
+            max="220"
+            required
+          />
+        </div>
+
         {/* Reading Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -157,6 +181,43 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
             </label>
           </div>
         </div>
+
+        {/* Conditional Activity Fields - Only for After Activity readings */}
+        {formData.readingType === 'after_activity' && (
+          <>
+            <div>
+              <label htmlFor="walkDuration" className="block text-sm font-medium text-gray-700 mb-1">
+                Duration of Walk (minutes)
+              </label>
+              <input
+                type="number"
+                id="walkDuration"
+                value={formData.walkDuration || ''}
+                onChange={(e) => handleInputChange('walkDuration', parseInt(e.target.value) || undefined)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50 text-gray-900"
+                placeholder="15"
+                min="1"
+                max="300"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="maxBpmDuringWalk" className="block text-sm font-medium text-gray-700 mb-1">
+                Max BPM During Walk
+              </label>
+              <input
+                type="number"
+                id="maxBpmDuringWalk"
+                value={formData.maxBpmDuringWalk || ''}
+                onChange={(e) => handleInputChange('maxBpmDuringWalk', parseInt(e.target.value) || undefined)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-purple-50 text-gray-900"
+                placeholder="80"
+                min="30"
+                max="220"
+              />
+            </div>
+          </>
+        )}
 
         {/* Date/Time */}
         <div>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Blood Pressure Readings</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .info { background: #dbeafe; color: #1e40af; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .progress { background: #fef3c7; color: #92400e; }
+        button {
+            background: linear-gradient(to right, #2563eb, #4f46e5);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: linear-gradient(to right, #1d4ed8, #4338ca);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .reading-item {
+            padding: 8px;
+            margin: 4px 0;
+            border-left: 3px solid #3b82f6;
+            padding-left: 12px;
+            font-size: 14px;
+        }
+        .counter {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e40af;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Import Blood Pressure Data</h1>
+        <p>This will import 28 blood pressure readings from your table.</p>
+        
+        <div class="status info">
+            <strong>📋 Data Summary:</strong><br>
+            • 14 Normal readings (daily baseline)<br>
+            • 14 After Activity readings (post-walk)<br>
+            • Date range: Aug 18-24, 2025<br>
+            • Includes: BP, BPM, walk duration, peak BPM
+        </div>
+
+        <div class="status info">
+            <strong>⚠️ Important:</strong> Make sure you're signed in to the app before clicking import!<br>
+            Sign in at: <a href="http://localhost:3000" target="_blank">http://localhost:3000</a>
+        </div>
+
+        <button id="importBtn" onclick="importReadings()">Start Import</button>
+
+        <div id="progressDiv" style="display:none;">
+            <div class="counter" id="counter">0/28</div>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const readings = [
+            // Normal readings
+            { date: '2025-08-18', time: '07:45', systolic: 105, diastolic: 65, bpm: 61, readingType: 'normal', notes: '' },
+            { date: '2025-08-18', time: '23:30', systolic: 105, diastolic: 59, bpm: 53, readingType: 'normal', notes: '' },
+            { date: '2025-08-19', time: '08:00', systolic: 116, diastolic: 64, bpm: 54, readingType: 'normal', notes: '' },
+            { date: '2025-08-19', time: '23:30', systolic: 110, diastolic: 64, bpm: 54, readingType: 'normal', notes: '' },
+            { date: '2025-08-20', time: '08:00', systolic: 123, diastolic: 70, bpm: 60, readingType: 'normal', notes: '' },
+            { date: '2025-08-20', time: '23:45', systolic: 142, diastolic: 78, bpm: 64, readingType: 'normal', notes: 'Due to gas formation BP increased and took 1/2 of 1.25mg concor' },
+            { date: '2025-08-21', time: '08:00', systolic: 107, diastolic: 65, bpm: 66, readingType: 'normal', notes: '' },
+            { date: '2025-08-21', time: '23:10', systolic: 113, diastolic: 69, bpm: 58, readingType: 'normal', notes: '' },
+            { date: '2025-08-22', time: '07:45', systolic: 114, diastolic: 69, bpm: 50, readingType: 'normal', notes: '' },
+            { date: '2025-08-22', time: '23:30', systolic: 105, diastolic: 55, bpm: 52, readingType: 'normal', notes: '' },
+            { date: '2025-08-23', time: '08:30', systolic: 112, diastolic: 69, bpm: 54, readingType: 'normal', notes: '' },
+            { date: '2025-08-23', time: '23:15', systolic: 118, diastolic: 69, bpm: 56, readingType: 'normal', notes: '' },
+            { date: '2025-08-24', time: '07:15', systolic: 114, diastolic: 62, bpm: 55, readingType: 'normal', notes: '' },
+            { date: '2025-08-24', time: '23:20', systolic: 114, diastolic: 67, bpm: 51, readingType: 'normal', notes: '' },
+            
+            // After activity readings
+            { date: '2025-08-19', time: '11:00', systolic: 125, diastolic: 74, bpm: 69, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 80, notes: '' },
+            { date: '2025-08-19', time: '19:00', systolic: 123, diastolic: 73, bpm: 71, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 80, notes: '' },
+            { date: '2025-08-20', time: '10:45', systolic: 122, diastolic: 73, bpm: 75, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 82, notes: '' },
+            { date: '2025-08-20', time: '18:45', systolic: 124, diastolic: 75, bpm: 69, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 83, notes: 'Had 1/2 of 1.25 mg concor in the night due to gas formation in the abdomen area and the BP went up to 142/78' },
+            { date: '2025-08-21', time: '10:45', systolic: 102, diastolic: 59, bpm: 55, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 73, notes: '' },
+            { date: '2025-08-21', time: '19:00', systolic: 109, diastolic: 65, bpm: 60, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 75, notes: '' },
+            { date: '2025-08-22', time: '10:30', systolic: 124, diastolic: 76, bpm: 69, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 82, notes: '' },
+            { date: '2025-08-22', time: '18:45', systolic: 128, diastolic: 66, bpm: 65, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 75, notes: '' },
+            { date: '2025-08-23', time: '11:15', systolic: 125, diastolic: 77, bpm: 76, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 82, notes: '' },
+            { date: '2025-08-23', time: '19:00', systolic: 126, diastolic: 72, bpm: 69, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 81, notes: '' },
+            { date: '2025-08-24', time: '11:00', systolic: 117, diastolic: 69, bpm: 72, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 81, notes: '' },
+            { date: '2025-08-24', time: '19:00', systolic: 120, diastolic: 55, bpm: 68, readingType: 'after_activity', walkDuration: 15, maxBpmDuringWalk: 82, notes: '' },
+        ];
+
+        async function importReadings() {
+            const btn = document.getElementById('importBtn');
+            const progressDiv = document.getElementById('progressDiv');
+            const log = document.getElementById('log');
+            const counter = document.getElementById('counter');
+
+            btn.disabled = true;
+            progressDiv.style.display = 'block';
+            log.innerHTML = '';
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (let i = 0; i < readings.length; i++) {
+                const reading = readings[i];
+                counter.textContent = `${i + 1}/28`;
+
+                try {
+                    // Format timestamp for API
+                    const timestamp = `${reading.date}T${reading.time}`;
+
+                    const response = await fetch('http://localhost:3000/api/blood-pressure', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include', // Important: include cookies for authentication
+                        body: JSON.stringify({
+                            systolic: reading.systolic,
+                            diastolic: reading.diastolic,
+                            bpm: reading.bpm,
+                            readingType: reading.readingType,
+                            timestamp: timestamp,
+                            notes: reading.notes,
+                            walkDuration: reading.walkDuration,
+                            maxBpmDuringWalk: reading.maxBpmDuringWalk
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    successCount++;
+                    log.innerHTML += `<div class="reading-item" style="border-left-color: #10b981;">✅ ${reading.date} ${reading.time} - ${reading.systolic}/${reading.diastolic} (${reading.readingType})</div>`;
+                } catch (error) {
+                    errorCount++;
+                    log.innerHTML += `<div class="reading-item" style="border-left-color: #ef4444;">❌ ${reading.date} ${reading.time} - Error: ${error.message}</div>`;
+                }
+
+                // Small delay to avoid overwhelming the server
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // Show final result
+            if (errorCount === 0) {
+                log.innerHTML += `<div class="status success"><strong>🎉 Import Complete!</strong><br>Successfully imported all ${successCount} readings.<br><br><a href="http://localhost:3000/blood-pressure" target="_blank" style="color: #065f46; font-weight: bold;">→ View Blood Pressure Tracker</a></div>`;
+            } else {
+                log.innerHTML += `<div class="status ${errorCount === readings.length ? 'error' : 'progress'}"><strong>Import Finished</strong><br>Success: ${successCount} | Errors: ${errorCount}<br><br>${errorCount === readings.length ? '⚠️ All imports failed. Make sure you are signed in at <a href="http://localhost:3000" target="_blank">localhost:3000</a> first!' : ''}</div>`;
+            }
+
+            btn.textContent = 'Import Complete';
+        }
+    </script>
+</body>
+</html>
+

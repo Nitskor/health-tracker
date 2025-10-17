@@ -115,11 +115,18 @@ export default function BloodSugarPage() {
   };
 
   const handleExportData = async () => {
-    await exportBloodSugarToPDF(readings);
+    // Use filtered readings if filters are active, otherwise use all readings
+    const readingsToExport = filteredReadings.length > 0 ? filteredReadings : readings;
+    
+    if (readingsToExport.length === 0) {
+      alert('No data to export. Adjust your filters or add readings.');
+      return;
+    }
+    await exportBloodSugarToPDF(readingsToExport);
   };
 
   // Group readings by date for display
-  const groupedReadings = filteredReadings.reduce((groups: { [key: string]: BloodSugarReading[] }, reading) => {
+  const groupedReadingsRaw = filteredReadings.reduce((groups: { [key: string]: BloodSugarReading[] }, reading) => {
     const date = new Date(reading.timestamp).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -132,6 +139,19 @@ export default function BloodSugarPage() {
     groups[date].push(reading);
     return groups;
   }, {});
+
+  // Sort dates in ascending order (oldest first) to match charts and PDF
+  const groupedReadings = Object.keys(groupedReadingsRaw)
+    .sort((a, b) => {
+      // Parse the dates back for proper comparison
+      const dateA = new Date(groupedReadingsRaw[a][0].timestamp);
+      const dateB = new Date(groupedReadingsRaw[b][0].timestamp);
+      return dateA.getTime() - dateB.getTime();
+    })
+    .reduce((sorted: { [key: string]: BloodSugarReading[] }, key) => {
+      sorted[key] = groupedReadingsRaw[key];
+      return sorted;
+    }, {});
 
   if (!isLoaded || loading) {
     return (

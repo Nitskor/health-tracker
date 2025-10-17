@@ -5,12 +5,13 @@ import { WeightReading } from '@/types/weight';
 import { BloodSugarReading, ReadingType } from '@/types/blood-sugar';
 import { getReadingTypeLabel, getReadingTypeColor } from '@/lib/blood-sugar-utils';
 
-// Helper function to create a simple chart using HTML canvas
+// Helper function to create a simple chart using HTML canvas with BP-specific styling
 async function createSimpleChart(
   title: string, 
   data: { label: string; value: number; color: string }[], 
   width: number = 800, 
-  height: number = 400
+  height: number = 400,
+  yAxisConfig?: { min: number; max: number; zones?: { min: number; max: number; color: string; label: string }[] }
 ): Promise<string> {
   // Create a temporary canvas element
   const canvas = document.createElement('canvas');
@@ -26,43 +27,64 @@ async function createSimpleChart(
 
   // Add title
   ctx.fillStyle = '#1f2937';
-  ctx.font = 'bold 18px Arial';
+  ctx.font = 'bold 20px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText(title, width / 2, 30);
+  ctx.fillText(title, width / 2, 35);
 
   // Calculate chart dimensions
-  const chartWidth = width - 100;
-  const chartHeight = height - 100;
-  const chartX = 50;
-  const chartY = 60;
+  const chartWidth = width - 120;
+  const chartHeight = height - 120;
+  const chartX = 70;
+  const chartY = 70;
 
   // Draw chart background
   ctx.fillStyle = '#f9fafb';
   ctx.fillRect(chartX, chartY, chartWidth, chartHeight);
 
-  // Draw border
-  ctx.strokeStyle = '#e5e7eb';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(chartX, chartY, chartWidth, chartHeight);
-
-  // Find max value for scaling
-  const maxValue = Math.max(...data.map(d => d.value));
-  const minValue = Math.min(...data.map(d => d.value));
-  const valueRange = maxValue - minValue;
-  
-  // For single data point or very small range, use a fixed range
+  // Determine Y-axis range
   let scaledMin, scaledMax, scaledRange;
-  if (data.length === 1 || valueRange === 0) {
-    // Use a fixed range around the value
-    const value = data[0].value;
-    scaledMin = value - 20;
-    scaledMax = value + 20;
-    scaledRange = 40;
-  } else {
-    const padding = valueRange * 0.2; // Increased padding for better visibility
-    scaledMin = minValue - padding;
-    scaledMax = maxValue + padding;
+  
+  if (yAxisConfig) {
+    // Use provided Y-axis configuration (for BP charts)
+    scaledMin = yAxisConfig.min;
+    scaledMax = yAxisConfig.max;
     scaledRange = scaledMax - scaledMin;
+    
+    // Draw reference zones if provided
+    if (yAxisConfig.zones) {
+      yAxisConfig.zones.forEach(zone => {
+        const zoneYStart = chartY + chartHeight - ((zone.max - scaledMin) / scaledRange) * chartHeight;
+        const zoneHeight = ((zone.max - zone.min) / scaledRange) * chartHeight;
+        
+        ctx.fillStyle = zone.color;
+        ctx.globalAlpha = 0.15;
+        ctx.fillRect(chartX, zoneYStart, chartWidth, zoneHeight);
+        ctx.globalAlpha = 1.0;
+        
+        // Add zone label
+        ctx.fillStyle = zone.color.replace('0.15', '1');
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(zone.label, chartX + chartWidth - 5, zoneYStart + 15);
+      });
+    }
+  } else {
+    // Auto-scale based on data
+    const maxValue = Math.max(...data.map(d => d.value));
+    const minValue = Math.min(...data.map(d => d.value));
+    const valueRange = maxValue - minValue;
+    
+    if (data.length === 1 || valueRange === 0) {
+      const value = data[0].value;
+      scaledMin = value - 20;
+      scaledMax = value + 20;
+      scaledRange = 40;
+    } else {
+      const padding = valueRange * 0.2;
+      scaledMin = minValue - padding;
+      scaledMax = maxValue + padding;
+      scaledRange = scaledMax - scaledMin;
+    }
   }
 
   // Draw data points and lines
@@ -177,34 +199,154 @@ async function createBloodPressureComparisonChart(readings: BloodPressureReading
   return await createSimpleChart('Average Blood Pressure by Reading Type', chartData);
 }
 
-// Helper function to create normal readings chart
-async function createNormalReadingsChart(readings: BloodPressureReading[]): Promise<string> {
+// Helper function to create Normal BP chart (matching page design)
+async function createNormalBPChart(readings: BloodPressureReading[]): Promise<string> {
   if (readings.length === 0) return '';
 
-  const chartData = readings
-    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-    .map((reading, index) => ({
-      label: new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      value: reading.systolic,
+  // Group by date and calculate daily averages
+  const groupedByDate: { [key: string]: BloodPressureReading[] } = {};
+  readings.forEach(reading => {
+    const date = new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!groupedByDate[date]) groupedByDate[date] = [];
+    groupedByDate[date].push(reading);
+  });
+
+  const chartData = Object.entries(groupedByDate)
+    .sort((a, b) => {
+      // Parse dates for proper sorting
+      const dateA = new Date(groupedByDate[a[0]][0].timestamp);
+      const dateB = new Date(groupedByDate[b[0]][0].timestamp);
+      return dateA.getTime() - dateB.getTime();
+    })
+    .map(([date, readings]) => ({
+      label: date,
+      value: Math.round(readings.reduce((sum, r) => sum + r.systolic, 0) / readings.length),
       color: '#3B82F6'
     }));
 
-  return await createSimpleChart('Normal Blood Pressure Readings', chartData);
+  // BP-specific Y-axis with reference zones
+  const yAxisConfig = {
+    min: 60,
+    max: 180,
+    zones: [
+      { min: 60, max: 120, color: '#10B981', label: 'Normal' },
+      { min: 120, max: 130, color: '#F59E0B', label: 'Elevated' },
+      { min: 130, max: 180, color: '#EF4444', label: 'High' }
+    ]
+  };
+
+  return await createSimpleChart('Normal Readings - Blood Pressure', chartData, 800, 400, yAxisConfig);
 }
 
-// Helper function to create after activity readings chart
-async function createAfterActivityReadingsChart(readings: BloodPressureReading[]): Promise<string> {
+// Helper function to create Normal BPM chart
+async function createNormalBPMChart(readings: BloodPressureReading[]): Promise<string> {
   if (readings.length === 0) return '';
 
-  const chartData = readings
-    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-    .map((reading, index) => ({
-      label: new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      value: reading.systolic,
-      color: '#8B5CF6'
+  // Group by date and calculate daily averages
+  const groupedByDate: { [key: string]: BloodPressureReading[] } = {};
+  readings.forEach(reading => {
+    const date = new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!groupedByDate[date]) groupedByDate[date] = [];
+    groupedByDate[date].push(reading);
+  });
+
+  const chartData = Object.entries(groupedByDate)
+    .sort((a, b) => {
+      const dateA = new Date(groupedByDate[a[0]][0].timestamp);
+      const dateB = new Date(groupedByDate[b[0]][0].timestamp);
+      return dateA.getTime() - dateB.getTime();
+    })
+    .map(([date, readings]) => ({
+      label: date,
+      value: Math.round(readings.reduce((sum, r) => sum + r.bpm, 0) / readings.length),
+      color: '#EF4444'
     }));
 
-  return await createSimpleChart('After Activity Blood Pressure Readings', chartData);
+  // BPM-specific Y-axis
+  const yAxisConfig = {
+    min: 30,
+    max: 120,
+    zones: [
+      { min: 60, max: 100, color: '#10B981', label: 'Normal HR' }
+    ]
+  };
+
+  return await createSimpleChart('Normal Readings - Heart Rate', chartData, 800, 400, yAxisConfig);
+}
+
+// Helper function to create Activity BP chart
+async function createActivityBPChart(readings: BloodPressureReading[]): Promise<string> {
+  if (readings.length === 0) return '';
+
+  // Group by date and calculate daily averages
+  const groupedByDate: { [key: string]: BloodPressureReading[] } = {};
+  readings.forEach(reading => {
+    const date = new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!groupedByDate[date]) groupedByDate[date] = [];
+    groupedByDate[date].push(reading);
+  });
+
+  const chartData = Object.entries(groupedByDate)
+    .sort((a, b) => {
+      const dateA = new Date(groupedByDate[a[0]][0].timestamp);
+      const dateB = new Date(groupedByDate[b[0]][0].timestamp);
+      return dateA.getTime() - dateB.getTime();
+    })
+    .map(([date, readings]) => ({
+      label: date,
+      value: Math.round(readings.reduce((sum, r) => sum + r.systolic, 0) / readings.length),
+      color: '#A855F7'
+    }));
+
+  // BP-specific Y-axis with reference zones
+  const yAxisConfig = {
+    min: 60,
+    max: 180,
+    zones: [
+      { min: 60, max: 120, color: '#10B981', label: 'Normal' },
+      { min: 120, max: 130, color: '#F59E0B', label: 'Elevated' },
+      { min: 130, max: 180, color: '#EF4444', label: 'High' }
+    ]
+  };
+
+  return await createSimpleChart('After Activity Readings - Blood Pressure', chartData, 800, 400, yAxisConfig);
+}
+
+// Helper function to create Activity BPM chart
+async function createActivityBPMChart(readings: BloodPressureReading[]): Promise<string> {
+  if (readings.length === 0) return '';
+
+  // Group by date and calculate daily averages
+  const groupedByDate: { [key: string]: BloodPressureReading[] } = {};
+  readings.forEach(reading => {
+    const date = new Date(reading.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!groupedByDate[date]) groupedByDate[date] = [];
+    groupedByDate[date].push(reading);
+  });
+
+  const chartData = Object.entries(groupedByDate)
+    .sort((a, b) => {
+      const dateA = new Date(groupedByDate[a[0]][0].timestamp);
+      const dateB = new Date(groupedByDate[b[0]][0].timestamp);
+      return dateA.getTime() - dateB.getTime();
+    })
+    .map(([date, readings]) => ({
+      label: date,
+      value: Math.round(readings.reduce((sum, r) => sum + r.bpm, 0) / readings.length),
+      color: '#F97316'
+    }));
+
+  // BPM-specific Y-axis with elevated zone
+  const yAxisConfig = {
+    min: 30,
+    max: 120,
+    zones: [
+      { min: 60, max: 100, color: '#10B981', label: 'Normal HR' },
+      { min: 100, max: 120, color: '#F59E0B', label: 'Elevated HR' }
+    ]
+  };
+
+  return await createSimpleChart('After Activity Readings - Heart Rate', chartData, 800, 400, yAxisConfig);
 }
 
 // Helper function to create weight trend chart
@@ -248,9 +390,11 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
   const normalReadings = readings.filter(r => r.readingType === 'normal');
   const afterActivityReadings = readings.filter(r => r.readingType === 'after_activity');
 
-  // Generate charts for each reading type
-  const normalChartBase64 = await createNormalReadingsChart(normalReadings);
-  const afterActivityChartBase64 = await createAfterActivityReadingsChart(afterActivityReadings);
+  // Generate 4 charts matching page layout: Normal BP, Normal BPM, Activity BP, Activity BPM
+  const normalBPChart = await createNormalBPChart(normalReadings);
+  const normalBPMChart = await createNormalBPMChart(normalReadings);
+  const activityBPChart = await createActivityBPChart(afterActivityReadings);
+  const activityBPMChart = await createActivityBPMChart(afterActivityReadings);
 
   // Create new PDF document
   const pdf = new jsPDF('p', 'mm', 'a4');
@@ -328,18 +472,38 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(14);
     pdf.setTextColor(255, 255, 255); // White
-    pdf.text('NORMAL READINGS', 20, yPosition, { baseline: 'middle' });
+    pdf.text('NORMAL READINGS - BLOOD PRESSURE', 20, yPosition, { baseline: 'middle' });
     yPosition += 10;
 
-    // Add normal readings chart
-    if (normalChartBase64) {
-      pdf.addImage(normalChartBase64, 'PNG', 15, yPosition, 180, 90);
+    // Add BP chart
+    if (normalBPChart) {
+      pdf.addImage(normalBPChart, 'PNG', 15, yPosition, 180, 90);
       yPosition += 100;
     }
 
-    // Table headers with better alignment
-    const colWidths = [35, 25, 25, 25, 70];
-    const colX = [15, 50, 75, 100, 125];
+    checkNewPage(50);
+    
+    // BPM section header
+    pdf.setFillColor(239, 68, 68); // Red
+    pdf.rect(15, yPosition - 5, pageWidth - 30, 10, 'F');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(255, 255, 255); // White
+    pdf.text('NORMAL READINGS - HEART RATE', 20, yPosition, { baseline: 'middle' });
+    yPosition += 10;
+
+    // Add BPM chart
+    if (normalBPMChart) {
+      pdf.addImage(normalBPMChart, 'PNG', 15, yPosition, 180, 90);
+      yPosition += 100;
+    }
+
+    checkNewPage(30);
+    yPosition += 5;
+
+    // Table headers with BPM column
+    const colWidths = [30, 20, 25, 25, 20, 70];
+    const colX = [15, 45, 65, 90, 115, 135];
     
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(10);
@@ -347,18 +511,19 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
     
     pdf.text('Date', colX[0], yPosition);
     pdf.text('Time', colX[1], yPosition);
-    pdf.text('Systolic', colX[2], yPosition, { align: 'center' });
-    pdf.text('Diastolic', colX[3], yPosition, { align: 'center' });
-    pdf.text('Notes', colX[4], yPosition);
+    pdf.text('Systolic', colX[2], yPosition);
+    pdf.text('Diastolic', colX[3], yPosition);
+    pdf.text('BPM', colX[4], yPosition);
+    pdf.text('Notes', colX[5], yPosition);
     yPosition += 7;
 
     // Draw header line
     addLine(15, yPosition, pageWidth - 15, yPosition, '#3B82F6');
     yPosition += 5;
 
-    // Table rows with alternating colors
+    // Table rows with alternating colors (chronological order - oldest first)
     normalReadings
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
       .forEach((reading, index) => {
         if (checkNewPage(15)) {
           // Redraw headers on new page
@@ -368,9 +533,10 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
           
           pdf.text('Date', colX[0], yPosition);
           pdf.text('Time', colX[1], yPosition);
-          pdf.text('Systolic', colX[2], yPosition, { align: 'center' });
-          pdf.text('Diastolic', colX[3], yPosition, { align: 'center' });
-          pdf.text('Notes', colX[4], yPosition);
+          pdf.text('Systolic', colX[2], yPosition);
+          pdf.text('Diastolic', colX[3], yPosition);
+          pdf.text('BPM', colX[4], yPosition);
+          pdf.text('Notes', colX[5], yPosition);
           yPosition += 7;
           
           addLine(15, yPosition, pageWidth - 15, yPosition, '#3B82F6');
@@ -392,14 +558,19 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
         });
 
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
+        pdf.setFontSize(9);
         pdf.setTextColor(31, 41, 55); // Dark gray
         
         pdf.text(dateStr, colX[0], yPosition);
         pdf.text(timeStr, colX[1], yPosition);
-        pdf.text(reading.systolic.toString(), colX[2], yPosition, { align: 'center' });
-        pdf.text(reading.diastolic.toString(), colX[3], yPosition, { align: 'center' });
-        pdf.text(reading.notes || '-', colX[4], yPosition);
+        pdf.text(reading.systolic.toString(), colX[2], yPosition);
+        pdf.text(reading.diastolic.toString(), colX[3], yPosition);
+        pdf.text(reading.bpm.toString(), colX[4], yPosition);
+        
+        // Truncate notes if too long
+        const notesText = reading.notes || '-';
+        const truncatedNotes = notesText.length > 30 ? notesText.substring(0, 27) + '...' : notesText;
+        pdf.text(truncatedNotes, colX[5], yPosition);
         yPosition += 9;
       });
 
@@ -410,55 +581,81 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
   if (afterActivityReadings.length > 0) {
     checkNewPage(50);
     
-    // Section header with background
-    pdf.setFillColor(139, 92, 246); // Purple
+    // Section header with background - BP
+    pdf.setFillColor(168, 85, 247); // Purple
     pdf.rect(15, yPosition - 5, pageWidth - 30, 10, 'F');
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(14);
     pdf.setTextColor(255, 255, 255); // White
-    pdf.text('AFTER ACTIVITY READINGS', 20, yPosition, { baseline: 'middle' });
+    pdf.text('AFTER ACTIVITY READINGS - BLOOD PRESSURE', 20, yPosition, { baseline: 'middle' });
     yPosition += 10;
 
-    // Add after activity readings chart
-    if (afterActivityChartBase64) {
-      pdf.addImage(afterActivityChartBase64, 'PNG', 15, yPosition, 180, 90);
+    // Add BP chart
+    if (activityBPChart) {
+      pdf.addImage(activityBPChart, 'PNG', 15, yPosition, 180, 90);
       yPosition += 100;
     }
 
-    // Table headers with better alignment
-    const colWidths = [35, 25, 25, 25, 70];
-    const colX = [15, 50, 75, 100, 125];
+    checkNewPage(50);
+    
+    // Section header - BPM
+    pdf.setFillColor(249, 115, 22); // Orange
+    pdf.rect(15, yPosition - 5, pageWidth - 30, 10, 'F');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(255, 255, 255); // White
+    pdf.text('AFTER ACTIVITY READINGS - HEART RATE', 20, yPosition, { baseline: 'middle' });
+    yPosition += 10;
+
+    // Add BPM chart
+    if (activityBPMChart) {
+      pdf.addImage(activityBPMChart, 'PNG', 15, yPosition, 180, 90);
+      yPosition += 100;
+    }
+
+    checkNewPage(30);
+    yPosition += 5;
+
+    // Table headers with activity columns
+    const colWidths = [25, 18, 22, 22, 18, 18, 18, 55];
+    const colX = [15, 40, 58, 80, 102, 120, 138, 156];
     
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setTextColor(55, 65, 81); // Dark gray
     
     pdf.text('Date', colX[0], yPosition);
     pdf.text('Time', colX[1], yPosition);
-    pdf.text('Systolic', colX[2], yPosition, { align: 'center' });
-    pdf.text('Diastolic', colX[3], yPosition, { align: 'center' });
-    pdf.text('Notes', colX[4], yPosition);
+    pdf.text('Systolic', colX[2], yPosition);
+    pdf.text('Diastolic', colX[3], yPosition);
+    pdf.text('BPM', colX[4], yPosition);
+    pdf.text('Walk', colX[5], yPosition);
+    pdf.text('Peak', colX[6], yPosition);
+    pdf.text('Notes', colX[7], yPosition);
     yPosition += 7;
 
     // Draw header line
     addLine(15, yPosition, pageWidth - 15, yPosition, '#8B5CF6');
     yPosition += 5;
 
-    // Table rows with alternating colors
+    // Table rows with alternating colors (chronological order - oldest first)
     afterActivityReadings
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
       .forEach((reading, index) => {
         if (checkNewPage(15)) {
           // Redraw headers on new page
           pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(10);
+          pdf.setFontSize(9);
           pdf.setTextColor(55, 65, 81);
           
           pdf.text('Date', colX[0], yPosition);
           pdf.text('Time', colX[1], yPosition);
-          pdf.text('Systolic', colX[2], yPosition, { align: 'center' });
-          pdf.text('Diastolic', colX[3], yPosition, { align: 'center' });
-          pdf.text('Notes', colX[4], yPosition);
+          pdf.text('Systolic', colX[2], yPosition);
+          pdf.text('Diastolic', colX[3], yPosition);
+          pdf.text('BPM', colX[4], yPosition);
+          pdf.text('Walk', colX[5], yPosition);
+          pdf.text('Peak', colX[6], yPosition);
+          pdf.text('Notes', colX[7], yPosition);
           yPosition += 7;
           
           addLine(15, yPosition, pageWidth - 15, yPosition, '#8B5CF6');
@@ -480,14 +677,21 @@ export async function exportBloodPressureToPDF(readings: BloodPressureReading[])
         });
 
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
+        pdf.setFontSize(8);
         pdf.setTextColor(31, 41, 55); // Dark gray
         
         pdf.text(dateStr, colX[0], yPosition);
         pdf.text(timeStr, colX[1], yPosition);
-        pdf.text(reading.systolic.toString(), colX[2], yPosition, { align: 'center' });
-        pdf.text(reading.diastolic.toString(), colX[3], yPosition, { align: 'center' });
-        pdf.text(reading.notes || '-', colX[4], yPosition);
+        pdf.text(reading.systolic.toString(), colX[2], yPosition);
+        pdf.text(reading.diastolic.toString(), colX[3], yPosition);
+        pdf.text(reading.bpm.toString(), colX[4], yPosition);
+        pdf.text((reading.walkDuration || '-').toString() + 'm', colX[5], yPosition);
+        pdf.text((reading.maxBpmDuringWalk || '-').toString(), colX[6], yPosition);
+        
+        // Truncate notes if too long
+        const notesText = reading.notes || '-';
+        const truncatedNotes = notesText.length > 20 ? notesText.substring(0, 17) + '...' : notesText;
+        pdf.text(truncatedNotes, colX[7], yPosition);
         yPosition += 9;
       });
 
@@ -597,9 +801,9 @@ export async function exportWeightToPDF(readings: WeightReading[]): Promise<void
   addLine(15, yPosition, pageWidth - 15, yPosition, '#8B5CF6');
   yPosition += 5;
 
-  // Table rows with alternating colors
+  // Table rows with alternating colors (chronological order - oldest first)
   readings
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
     .forEach((reading, index) => {
       if (checkNewPage(15)) {
         // Redraw headers on new page
@@ -788,9 +992,9 @@ export async function exportBloodSugarToPDF(readings: BloodSugarReading[]): Prom
     addLine(15, yPosition, pageWidth - 15, yPosition, typeColor);
     yPosition += 5;
 
-    // Table rows with alternating colors
+    // Table rows with alternating colors (chronological order - oldest first)
     typeReadings
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
       .forEach((reading, index) => {
         if (checkNewPage(15)) {
           // Redraw headers on new page

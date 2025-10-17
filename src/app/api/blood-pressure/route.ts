@@ -13,18 +13,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body: BloodPressureFormData = await request.json();
-    const { systolic, diastolic, readingType, timestamp, notes } = body;
+    const { systolic, diastolic, bpm, readingType, timestamp, notes, walkDuration, maxBpmDuringWalk } = body;
 
     // Validation
-    if (!systolic || !diastolic || !readingType || !timestamp) {
+    if (!systolic || !diastolic || !bpm || !readingType || !timestamp) {
       return NextResponse.json({ 
-        error: 'Systolic, diastolic, reading type, and timestamp are required' 
+        error: 'Systolic, diastolic, BPM, reading type, and timestamp are required' 
       }, { status: 400 });
     }
 
     if (systolic < 50 || systolic > 300 || diastolic < 30 || diastolic > 200) {
       return NextResponse.json({ 
         error: 'Invalid blood pressure values' 
+      }, { status: 400 });
+    }
+
+    if (bpm < 30 || bpm > 220) {
+      return NextResponse.json({ 
+        error: 'Invalid BPM value (must be between 30-220)' 
       }, { status: 400 });
     }
 
@@ -41,12 +47,19 @@ export async function POST(request: NextRequest) {
       userId,
       systolic: Number(systolic),
       diastolic: Number(diastolic),
+      bpm: Number(bpm),
       readingType,
       timestamp: new Date(timestamp),
       notes: notes || '',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    // Add optional activity fields only if they exist
+    if (readingType === 'after_activity') {
+      if (walkDuration) reading.walkDuration = Number(walkDuration);
+      if (maxBpmDuringWalk) reading.maxBpmDuringWalk = Number(maxBpmDuringWalk);
+    }
 
     const result = await collection.insertOne(reading);
 
@@ -72,6 +85,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '20');
     const type = searchParams.get('type') as 'normal' | 'after_activity' | null;
+    const debug = searchParams.get('debug') === 'true';
 
     const db = await getDatabase();
     const collection = db.collection<BloodPressureReading>('blood_pressure');
@@ -87,6 +101,26 @@ export async function GET(request: NextRequest) {
       .sort({ timestamp: -1 })
       .limit(limit)
       .toArray();
+
+    // If debug mode, return additional info
+    if (debug) {
+      const totalCount = await collection.countDocuments(query);
+      const allReadings = await collection.find(query).sort({ timestamp: 1 }).toArray();
+      const dateRange = allReadings.length > 0 ? {
+        earliest: allReadings[0].timestamp,
+        latest: allReadings[allReadings.length - 1].timestamp
+      } : null;
+      
+      return NextResponse.json({ 
+        readings, 
+        debug: {
+          totalCount,
+          returnedCount: readings.length,
+          dateRange,
+          limit
+        }
+      });
+    }
 
     return NextResponse.json({ readings });
   } catch (error) {
@@ -104,7 +138,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, systolic, diastolic, readingType, timestamp, notes } = body;
+    const { id, systolic, diastolic, bpm, readingType, timestamp, notes, walkDuration, maxBpmDuringWalk } = body;
     
     console.log('PUT request received:', { id, userId, body });
 
@@ -113,15 +147,21 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validation
-    if (!systolic || !diastolic || !readingType || !timestamp) {
+    if (!systolic || !diastolic || !bpm || !readingType || !timestamp) {
       return NextResponse.json({ 
-        error: 'Systolic, diastolic, reading type, and timestamp are required' 
+        error: 'Systolic, diastolic, BPM, reading type, and timestamp are required' 
       }, { status: 400 });
     }
 
     if (systolic < 50 || systolic > 300 || diastolic < 30 || diastolic > 200) {
       return NextResponse.json({ 
         error: 'Invalid blood pressure values' 
+      }, { status: 400 });
+    }
+
+    if (bpm < 30 || bpm > 220) {
+      return NextResponse.json({ 
+        error: 'Invalid BPM value (must be between 30-220)' 
       }, { status: 400 });
     }
 
@@ -147,14 +187,25 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
     }
 
-    const updateData = {
+    const updateData: any = {
       systolic: Number(systolic),
       diastolic: Number(diastolic),
+      bpm: Number(bpm),
       readingType,
       timestamp: new Date(timestamp),
       notes: notes || '',
       updatedAt: new Date(),
     };
+
+    // Add or remove activity fields based on reading type
+    if (readingType === 'after_activity') {
+      if (walkDuration) updateData.walkDuration = Number(walkDuration);
+      if (maxBpmDuringWalk) updateData.maxBpmDuringWalk = Number(maxBpmDuringWalk);
+    } else {
+      // Remove activity fields if changing from after_activity to normal
+      updateData.walkDuration = null;
+      updateData.maxBpmDuringWalk = null;
+    }
 
     const result = await collection.updateOne(
       { _id: objectId as any, userId },

@@ -118,11 +118,14 @@ export default function WeightPage() {
   };
 
   const handleExportData = async () => {
-    if (readings.length === 0) {
-      alert('No data to export');
+    // Use filtered readings if filters are active, otherwise use all readings
+    const readingsToExport = filteredReadings.length > 0 ? filteredReadings : readings;
+    
+    if (readingsToExport.length === 0) {
+      alert('No data to export. Adjust your filters or add readings.');
       return;
     }
-    await exportWeightToPDF(readings);
+    await exportWeightToPDF(readingsToExport);
   };
 
   const handleFilteredReadingsChange = useCallback((filtered: WeightReading[]) => {
@@ -334,9 +337,9 @@ export default function WeightPage() {
                     return groups;
                   }, {} as { [key: string]: WeightReading[] });
                   
-                  // Sort dates in descending order (most recent first)
+                  // Sort dates in ascending order (oldest first) to match charts
                   const sortedDates = Object.keys(groupedReadings).sort((a, b) => 
-                    new Date(b).getTime() - new Date(a).getTime()
+                    new Date(a).getTime() - new Date(b).getTime()
                   );
                   
                   return sortedDates.map((dateKey) => {

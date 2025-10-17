@@ -40,12 +40,18 @@ export default function BloodPressurePage() {
   const fetchData = async () => {
     try {
       const [readingsResponse, statsResponse] = await Promise.all([
-        fetch('/api/blood-pressure'),
+        fetch('/api/blood-pressure?limit=10000'),
         fetch('/api/blood-pressure/stats')
       ]);
 
       if (readingsResponse.ok) {
         const data = await readingsResponse.json();
+        console.log('📊 Fetched readings:', data.readings.length, 'total');
+        console.log('📅 Date range:', 
+          data.readings.length > 0 ? new Date(data.readings[data.readings.length - 1].timestamp).toLocaleDateString() : 'N/A',
+          'to',
+          data.readings.length > 0 ? new Date(data.readings[0].timestamp).toLocaleDateString() : 'N/A'
+        );
         setReadings(data.readings);
       }
 
@@ -62,9 +68,16 @@ export default function BloodPressurePage() {
 
   const fetchReadings = async () => {
     try {
-      const response = await fetch('/api/blood-pressure');
+      // Fetch ALL readings without limit
+      const response = await fetch('/api/blood-pressure?limit=10000');
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 Fetched readings:', data.readings.length, 'total');
+        console.log('📅 Date range:', 
+          data.readings.length > 0 ? new Date(data.readings[data.readings.length - 1].timestamp).toLocaleDateString() : 'N/A',
+          'to',
+          data.readings.length > 0 ? new Date(data.readings[0].timestamp).toLocaleDateString() : 'N/A'
+        );
         setReadings(data.readings);
       }
     } catch (error) {
@@ -120,11 +133,14 @@ export default function BloodPressurePage() {
   };
 
   const handleExportData = async () => {
-    if (readings.length === 0) {
-      alert('No data to export');
+    // Use filtered readings if filters are active, otherwise use all readings
+    const readingsToExport = filteredReadings.length > 0 ? filteredReadings : readings;
+    
+    if (readingsToExport.length === 0) {
+      alert('No data to export. Adjust your filters or add readings.');
       return;
     }
-    await exportBloodPressureToPDF(readings);
+    await exportBloodPressureToPDF(readingsToExport);
   };
 
   const handleFilteredReadingsChange = useCallback((filtered: BloodPressureReading[]) => {
@@ -152,9 +168,9 @@ export default function BloodPressurePage() {
       return groups;
     }, {} as { [key: string]: BloodPressureReading[] });
     
-    // Sort dates in descending order (most recent first)
+    // Sort dates in ascending order (oldest first) to match charts
     return Object.keys(grouped)
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
       .map(dateKey => ({
         dateKey,
         readings: grouped[dateKey]
@@ -409,42 +425,48 @@ export default function BloodPressurePage() {
                 No readings found for the selected filters. Try adjusting your time period or reading type.
               </div>
             ) : (
-              <div className="space-y-6">
-                {groupedReadings.map(({ dateKey, readings: dayReadings }) => {
-                    const readingDate = new Date(dayReadings[0].timestamp);
-                    const isToday = readingDate.toDateString() === new Date().toDateString();
-                    const isYesterday = readingDate.toDateString() === new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-                    
-                    // Calculate relative date
-                    const getRelativeDate = (date: Date) => {
-                      if (isToday) return 'Today';
-                      if (isYesterday) return 'Yesterday';
-                      return date.toLocaleDateString('en-US', { 
-                        weekday: 'long',
-                        month: 'long', 
-                        day: 'numeric',
-                        year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
-                      });
-                    };
-                    
-                    return (
-                      <div key={dateKey} className="space-y-4">
-                        {/* Date Header */}
-                        <div className="flex items-center space-x-4">
-                          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                          <div className="px-5 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full border border-blue-200">
-                            <h3 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                              {getRelativeDate(readingDate)}
-                            </h3>
-                          </div>
-                          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                        </div>
-                        
-                        {/* Readings for this date */}
-                        <div className="space-y-4">
-                          {dayReadings.map((reading) => {
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                {/* Normal Readings Table */}
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h4 className="text-lg font-bold text-blue-600 flex items-center gap-2">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                      Normal Readings
+                    </h4>
+                    <span className="text-sm text-gray-500">
+                      {groupedReadings.flatMap(g => g.readings).filter(r => r.readingType === 'normal').length} readings
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b-2 border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100">
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Date</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Time</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">BP</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">BPM</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Notes</th>
+                          <th className="text-center p-3 text-sm font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupedReadings.flatMap(({ readings }) => 
+                          readings.filter(r => r.readingType === 'normal')
+                        ).length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="p-8 text-center text-gray-500">
+                              No normal readings in this period
+                            </td>
+                          </tr>
+                        ) : (
+                          groupedReadings.flatMap(({ readings }) => 
+                            readings.filter(r => r.readingType === 'normal')
+                          ).map((reading) => {
                             const category = getBloodPressureCategory(reading.systolic, reading.diastolic);
-                            const typeColor = getReadingTypeColor(reading.readingType);
+                            const readingDate = new Date(reading.timestamp).toLocaleDateString('en-US', { 
+                              month: 'short',
+                              day: 'numeric'
+                            });
                             const readingTime = new Date(reading.timestamp).toLocaleTimeString('en-US', { 
                               hour: '2-digit', 
                               minute: '2-digit',
@@ -452,68 +474,169 @@ export default function BloodPressurePage() {
                             });
                             
                             return (
-                              <div key={reading._id} className="border-2 border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:border-gray-200 transition-all duration-300 bg-white hover:-translate-y-0.5">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-3 mb-3">
-                                      <span className="text-3xl font-bold text-gray-900">
-                                        {formatBloodPressure(reading.systolic, reading.diastolic)}
-                                      </span>
-                                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        typeColor === 'blue' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                                      }`}>
-                                        {getReadingTypeLabel(reading.readingType)}
-                                      </span>
-                                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                        category.color === 'green' ? 'bg-green-100 text-green-800' :
-                                        category.color === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
-                                        category.color === 'orange' ? 'bg-orange-100 text-orange-800' :
-                                        'bg-red-100 text-red-800'
-                                      }`}>
-                                        {category.category}
-                                      </span>
-                                    </div>
-                                    
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <p className="text-sm text-gray-600 font-medium">
-                                          {readingTime}
-                                        </p>
-                                        {reading.notes && (
-                                          <p className="text-sm text-gray-600 mt-1 italic">&ldquo;{reading.notes}&rdquo;</p>
-                                        )}
-                                      </div>
-                                      
-                                      <div className="flex items-center space-x-2">
-                                        <button 
-                                          onClick={() => handleEditReading(reading)}
-                                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors" 
-                                          title="Edit reading"
-                                        >
-                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                          </svg>
-                                        </button>
-                                        <button 
-                                          onClick={() => setDeletingReading(reading)}
-                                          className="p-2 text-gray-400 hover:text-red-600 transition-colors" 
-                                          title="Delete reading"
-                                        >
-                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                          </svg>
-                                        </button>
-                                      </div>
-                                    </div>
+                              <tr 
+                                key={reading._id} 
+                                className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors"
+                              >
+                                <td className="p-3 text-gray-900 font-medium text-sm">{readingDate}</td>
+                                <td className="p-3 text-gray-700 text-sm">{readingTime}</td>
+                                <td className="p-3">
+                                  <div className="flex flex-col gap-1">
+                                    <span className="font-bold text-gray-900">{reading.systolic}/{reading.diastolic}</span>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium w-fit ${
+                                      category.color === 'green' ? 'bg-green-100 text-green-700' :
+                                      category.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                                      category.color === 'orange' ? 'bg-orange-100 text-orange-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      {category.category}
+                                    </span>
                                   </div>
-                                </div>
-                              </div>
+                                </td>
+                                <td className="p-3 text-gray-900 font-medium">{reading.bpm}</td>
+                                <td className="p-3 text-gray-600 text-sm max-w-[150px] truncate" title={reading.notes}>
+                                  {reading.notes || '-'}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center justify-center space-x-1">
+                                    <button 
+                                      onClick={() => handleEditReading(reading)}
+                                      className="p-1.5 text-blue-600 hover:bg-blue-100 rounded transition-colors" 
+                                      title="Edit"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                    <button 
+                                      onClick={() => setDeletingReading(reading)}
+                                      className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors" 
+                                      title="Delete"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
                             );
-                          })}
-                        </div>
-                      </div>
-                    );
-                })}
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* After Activity Readings Table */}
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h4 className="text-lg font-bold text-purple-600 flex items-center gap-2">
+                      <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+                      After Activity Readings
+                    </h4>
+                    <span className="text-sm text-gray-500">
+                      {groupedReadings.flatMap(g => g.readings).filter(r => r.readingType === 'after_activity').length} readings
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b-2 border-gray-200 bg-gradient-to-r from-purple-50 to-purple-100">
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Date</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Time</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">BP</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">BPM</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Walk</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Peak</th>
+                          <th className="text-left p-3 text-sm font-semibold text-gray-700">Notes</th>
+                          <th className="text-center p-3 text-sm font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {groupedReadings.flatMap(({ readings }) => 
+                          readings.filter(r => r.readingType === 'after_activity')
+                        ).length === 0 ? (
+                          <tr>
+                            <td colSpan={8} className="p-8 text-center text-gray-500">
+                              No after-activity readings in this period
+                            </td>
+                          </tr>
+                        ) : (
+                          groupedReadings.flatMap(({ readings }) => 
+                            readings.filter(r => r.readingType === 'after_activity')
+                          ).map((reading) => {
+                            const category = getBloodPressureCategory(reading.systolic, reading.diastolic);
+                            const readingDate = new Date(reading.timestamp).toLocaleDateString('en-US', { 
+                              month: 'short',
+                              day: 'numeric'
+                            });
+                            const readingTime = new Date(reading.timestamp).toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit',
+                              hour12: false 
+                            });
+                            
+                            return (
+                              <tr 
+                                key={reading._id} 
+                                className="border-b border-gray-100 hover:bg-purple-50/50 transition-colors"
+                              >
+                                <td className="p-3 text-gray-900 font-medium text-sm">{readingDate}</td>
+                                <td className="p-3 text-gray-700 text-sm">{readingTime}</td>
+                                <td className="p-3">
+                                  <div className="flex flex-col gap-1">
+                                    <span className="font-bold text-gray-900">{reading.systolic}/{reading.diastolic}</span>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium w-fit ${
+                                      category.color === 'green' ? 'bg-green-100 text-green-700' :
+                                      category.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                                      category.color === 'orange' ? 'bg-orange-100 text-orange-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      {category.category}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3 text-gray-900 font-medium">{reading.bpm}</td>
+                                <td className="p-3 text-gray-700 text-sm">
+                                  {reading.walkDuration ? `${reading.walkDuration}m` : '-'}
+                                </td>
+                                <td className="p-3 text-purple-700 font-medium text-sm">
+                                  {reading.maxBpmDuringWalk || '-'}
+                                </td>
+                                <td className="p-3 text-gray-600 text-sm max-w-[120px] truncate" title={reading.notes}>
+                                  {reading.notes || '-'}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center justify-center space-x-1">
+                                    <button 
+                                      onClick={() => handleEditReading(reading)}
+                                      className="p-1.5 text-purple-600 hover:bg-purple-100 rounded transition-colors" 
+                                      title="Edit"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                    <button 
+                                      onClick={() => setDeletingReading(reading)}
+                                      className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors" 
+                                      title="Delete"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
           </div>

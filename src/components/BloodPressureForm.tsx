@@ -10,14 +10,24 @@ interface BloodPressureFormProps {
 }
 
 export default function BloodPressureForm({ onSuccess, onCancel, editingReading }: BloodPressureFormProps) {
+  // Helper function to format date for datetime-local input
+  const formatForDateTimeLocal = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [formData, setFormData] = useState<BloodPressureFormData>({
     systolic: editingReading?.systolic || 0,
     diastolic: editingReading?.diastolic || 0,
     bpm: editingReading?.bpm || 0,
     readingType: editingReading?.readingType || 'normal',
     timestamp: editingReading ? 
-      new Date(editingReading.timestamp).toLocaleString('sv-SE').slice(0, 16) : 
-      new Date().toLocaleString('sv-SE').slice(0, 16),
+      formatForDateTimeLocal(new Date(editingReading.timestamp)) : 
+      formatForDateTimeLocal(new Date()),
     notes: editingReading?.notes || '',
     walkDuration: editingReading?.walkDuration || undefined,
     maxBpmDuringWalk: editingReading?.maxBpmDuringWalk || undefined
@@ -68,7 +78,7 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
           diastolic: 0,
           bpm: 0,
           readingType: 'normal',
-          timestamp: new Date().toLocaleString('sv-SE').slice(0, 16),
+          timestamp: formatForDateTimeLocal(new Date()),
           notes: '',
           walkDuration: undefined,
           maxBpmDuringWalk: undefined

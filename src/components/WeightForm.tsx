@@ -10,11 +10,21 @@ interface WeightFormProps {
 }
 
 export default function WeightForm({ onSuccess, onCancel, editingReading }: WeightFormProps) {
+  // Helper function to format date for datetime-local input
+  const formatForDateTimeLocal = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [formData, setFormData] = useState<WeightFormData>({
     weight: editingReading?.weight || 0,
     timestamp: editingReading ? 
-      new Date(editingReading.timestamp).toLocaleString('sv-SE').slice(0, 16) : 
-      new Date().toLocaleString('sv-SE').slice(0, 16),
+      formatForDateTimeLocal(new Date(editingReading.timestamp)) : 
+      formatForDateTimeLocal(new Date()),
     notes: editingReading?.notes || ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,7 +70,7 @@ export default function WeightForm({ onSuccess, onCancel, editingReading }: Weig
       if (!isEditing) {
         setFormData({
           weight: 0,
-          timestamp: new Date().toLocaleString('sv-SE').slice(0, 16),
+          timestamp: formatForDateTimeLocal(new Date()),
           notes: ''
         });
       }

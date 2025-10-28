@@ -9,6 +9,16 @@ interface BloodSugarFormProps {
 }
 
 export default function BloodSugarForm({ onSuccess, editingReading }: BloodSugarFormProps) {
+  // Helper function to format date for datetime-local input
+  const formatForDateTimeLocal = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [glucose, setGlucose] = useState('');
   const [readingType, setReadingType] = useState<ReadingType>('fasting');
   const [timestamp, setTimestamp] = useState('');
@@ -18,17 +28,8 @@ export default function BloodSugarForm({ onSuccess, editingReading }: BloodSugar
 
   useEffect(() => {
     // Set default timestamp to now
-    const now = new Date();
-    const localDateTime = now.toLocaleString('sv-SE', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    }).replace(' ', 'T');
-    
     if (!editingReading) {
-      setTimestamp(localDateTime);
+      setTimestamp(formatForDateTimeLocal(new Date()));
     }
   }, [editingReading]);
 
@@ -36,17 +37,7 @@ export default function BloodSugarForm({ onSuccess, editingReading }: BloodSugar
     if (editingReading) {
       setGlucose(editingReading.glucose.toString());
       setReadingType(editingReading.readingType);
-      
-      const date = new Date(editingReading.timestamp);
-      const localDateTime = date.toLocaleString('sv-SE', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      }).replace(' ', 'T');
-      setTimestamp(localDateTime);
-      
+      setTimestamp(formatForDateTimeLocal(new Date(editingReading.timestamp)));
       setNotes(editingReading.notes || '');
     }
   }, [editingReading]);
@@ -92,15 +83,7 @@ export default function BloodSugarForm({ onSuccess, editingReading }: BloodSugar
       if (!editingReading) {
         setGlucose('');
         setReadingType('fasting');
-        const now = new Date();
-        const localDateTime = now.toLocaleString('sv-SE', { 
-          year: 'numeric', 
-          month: '2-digit', 
-          day: '2-digit', 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }).replace(' ', 'T');
-        setTimestamp(localDateTime);
+        setTimestamp(formatForDateTimeLocal(new Date()));
         setNotes('');
       }
 

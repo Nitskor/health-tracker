@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body: WeightFormData = await request.json();
-    const { weight, timestamp, notes } = body;
+    const body: WeightFormData & { timezoneOffset?: number } = await request.json();
+    const { weight, timestamp, notes, timezoneOffset } = body;
 
     // Validation
     if (!weight || !timestamp) {
@@ -28,16 +28,27 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Parse datetime-local string as local time (not UTC)
-    const parseLocalDateTime = (dateTimeString: string): Date => {
+    // Parse datetime-local string using client timezone offset
+    const parseLocalDateTime = (dateTimeString: string, timezoneOffsetMinutes?: number): Date => {
       // datetime-local format: "YYYY-MM-DDTHH:MM"
-      // We need to treat this as local time, not UTC
+      // This represents the user's local time
       const [datePart, timePart] = dateTimeString.split('T');
       const [year, month, day] = datePart.split('-').map(Number);
       const [hours, minutes] = timePart.split(':').map(Number);
       
-      // Create date in local timezone
-      return new Date(year, month - 1, day, hours, minutes);
+      // Create date in user's local timezone
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      
+      // If we have timezone offset, adjust to UTC for storage
+      if (timezoneOffsetMinutes !== undefined) {
+        // timezoneOffset is in minutes, positive means behind UTC
+        // We need to subtract the offset to get UTC time
+        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        return new Date(utcTime);
+      }
+      
+      // Fallback: assume local time (for backward compatibility)
+      return localDate;
     };
 
     const db = await getDatabase();
@@ -46,7 +57,7 @@ export async function POST(request: NextRequest) {
     const reading: Omit<WeightReading, '_id'> = {
       userId,
       weight: Number(weight),
-      timestamp: parseLocalDateTime(timestamp),
+      timestamp: parseLocalDateTime(timestamp, timezoneOffset),
       notes: notes || '',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -101,7 +112,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, weight, timestamp, notes } = body;
+    const { id, weight, timestamp, notes, timezoneOffset } = body;
     
     console.log('PUT request received:', { id, userId, body });
 
@@ -138,21 +149,32 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
     }
 
-    // Parse datetime-local string as local time (not UTC)
-    const parseLocalDateTime = (dateTimeString: string): Date => {
+    // Parse datetime-local string using client timezone offset
+    const parseLocalDateTime = (dateTimeString: string, timezoneOffsetMinutes?: number): Date => {
       // datetime-local format: "YYYY-MM-DDTHH:MM"
-      // We need to treat this as local time, not UTC
+      // This represents the user's local time
       const [datePart, timePart] = dateTimeString.split('T');
       const [year, month, day] = datePart.split('-').map(Number);
       const [hours, minutes] = timePart.split(':').map(Number);
       
-      // Create date in local timezone
-      return new Date(year, month - 1, day, hours, minutes);
+      // Create date in user's local timezone
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      
+      // If we have timezone offset, adjust to UTC for storage
+      if (timezoneOffsetMinutes !== undefined) {
+        // timezoneOffset is in minutes, positive means behind UTC
+        // We need to subtract the offset to get UTC time
+        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        return new Date(utcTime);
+      }
+      
+      // Fallback: assume local time (for backward compatibility)
+      return localDate;
     };
 
     const updateData = {
       weight: Number(weight),
-      timestamp: parseLocalDateTime(timestamp),
+      timestamp: parseLocalDateTime(timestamp, timezoneOffset),
       notes: notes || '',
       updatedAt: new Date(),
     };

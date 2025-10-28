@@ -55,11 +55,14 @@ export default function BloodSugarForm({ onSuccess, editingReading }: BloodSugar
         return;
       }
 
+      // Add timezone offset to help server parse datetime correctly
+      const timezoneOffset = new Date().getTimezoneOffset();
       const data = {
         glucose: glucoseNum,
         readingType,
-        timestamp: new Date(timestamp).toISOString(),
+        timestamp,
         notes,
+        timezoneOffset,
       };
 
       const url = '/api/blood-sugar';

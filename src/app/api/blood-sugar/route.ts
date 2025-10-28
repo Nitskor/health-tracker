@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { glucose, readingType, timestamp, notes } = body;
+    const { glucose, readingType, timestamp, notes, timezoneOffset } = body;
 
     // Validation
     if (!glucose || !readingType || !timestamp) {
@@ -66,16 +66,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse datetime-local string as local time (not UTC)
-    const parseLocalDateTime = (dateTimeString: string): Date => {
+    // Parse datetime-local string using client timezone offset
+    const parseLocalDateTime = (dateTimeString: string, timezoneOffsetMinutes?: number): Date => {
       // datetime-local format: "YYYY-MM-DDTHH:MM"
-      // We need to treat this as local time, not UTC
+      // This represents the user's local time
       const [datePart, timePart] = dateTimeString.split('T');
       const [year, month, day] = datePart.split('-').map(Number);
       const [hours, minutes] = timePart.split(':').map(Number);
       
-      // Create date in local timezone
-      return new Date(year, month - 1, day, hours, minutes);
+      // Create date in user's local timezone
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      
+      // If we have timezone offset, adjust to UTC for storage
+      if (timezoneOffsetMinutes !== undefined) {
+        // timezoneOffset is in minutes, positive means behind UTC
+        // We need to subtract the offset to get UTC time
+        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        return new Date(utcTime);
+      }
+      
+      // Fallback: assume local time (for backward compatibility)
+      return localDate;
     };
 
     const client = await clientPromise;
@@ -86,7 +97,7 @@ export async function POST(request: NextRequest) {
       userId,
       glucose: Number(glucose),
       readingType,
-      timestamp: parseLocalDateTime(timestamp),
+      timestamp: parseLocalDateTime(timestamp, timezoneOffset),
       notes: notes || '',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -120,7 +131,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { _id, glucose, readingType, timestamp, notes } = body;
+    const { _id, glucose, readingType, timestamp, notes, timezoneOffset } = body;
 
     if (!_id) {
       return NextResponse.json(
@@ -152,16 +163,27 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Parse datetime-local string as local time (not UTC)
-    const parseLocalDateTime = (dateTimeString: string): Date => {
+    // Parse datetime-local string using client timezone offset
+    const parseLocalDateTime = (dateTimeString: string, timezoneOffsetMinutes?: number): Date => {
       // datetime-local format: "YYYY-MM-DDTHH:MM"
-      // We need to treat this as local time, not UTC
+      // This represents the user's local time
       const [datePart, timePart] = dateTimeString.split('T');
       const [year, month, day] = datePart.split('-').map(Number);
       const [hours, minutes] = timePart.split(':').map(Number);
       
-      // Create date in local timezone
-      return new Date(year, month - 1, day, hours, minutes);
+      // Create date in user's local timezone
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      
+      // If we have timezone offset, adjust to UTC for storage
+      if (timezoneOffsetMinutes !== undefined) {
+        // timezoneOffset is in minutes, positive means behind UTC
+        // We need to subtract the offset to get UTC time
+        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        return new Date(utcTime);
+      }
+      
+      // Fallback: assume local time (for backward compatibility)
+      return localDate;
     };
 
     const updateData: Record<string, Date | number | string> = {
@@ -170,7 +192,7 @@ export async function PUT(request: NextRequest) {
 
     if (glucose !== undefined) updateData.glucose = Number(glucose);
     if (readingType) updateData.readingType = readingType;
-    if (timestamp) updateData.timestamp = parseLocalDateTime(timestamp);
+    if (timestamp) updateData.timestamp = parseLocalDateTime(timestamp, timezoneOffset);
     if (notes !== undefined) updateData.notes = notes;
 
     const result = await collection.updateOne(

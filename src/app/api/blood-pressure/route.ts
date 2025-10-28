@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body: BloodPressureFormData = await request.json();
-    const { systolic, diastolic, bpm, readingType, timestamp, notes, walkDuration, maxBpmDuringWalk } = body;
+    const body: BloodPressureFormData & { timezoneOffset?: number } = await request.json();
+    const { systolic, diastolic, bpm, readingType, timestamp, notes, walkDuration, maxBpmDuringWalk, timezoneOffset } = body;
 
     // Validation
     if (!systolic || !diastolic || !bpm || !readingType || !timestamp) {
@@ -43,16 +43,27 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase();
     const collection = db.collection<BloodPressureReading>('blood_pressure');
 
-    // Parse datetime-local string as local time (not UTC)
-    const parseLocalDateTime = (dateTimeString: string): Date => {
+    // Parse datetime-local string using client timezone offset
+    const parseLocalDateTime = (dateTimeString: string, timezoneOffsetMinutes?: number): Date => {
       // datetime-local format: "YYYY-MM-DDTHH:MM"
-      // We need to treat this as local time, not UTC
+      // This represents the user's local time
       const [datePart, timePart] = dateTimeString.split('T');
       const [year, month, day] = datePart.split('-').map(Number);
       const [hours, minutes] = timePart.split(':').map(Number);
       
-      // Create date in local timezone
-      return new Date(year, month - 1, day, hours, minutes);
+      // Create date in user's local timezone
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      
+      // If we have timezone offset, adjust to UTC for storage
+      if (timezoneOffsetMinutes !== undefined) {
+        // timezoneOffset is in minutes, positive means behind UTC
+        // We need to subtract the offset to get UTC time
+        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        return new Date(utcTime);
+      }
+      
+      // Fallback: assume local time (for backward compatibility)
+      return localDate;
     };
 
     const reading: Omit<BloodPressureReading, '_id'> = {
@@ -61,7 +72,7 @@ export async function POST(request: NextRequest) {
       diastolic: Number(diastolic),
       bpm: Number(bpm),
       readingType,
-      timestamp: parseLocalDateTime(timestamp),
+      timestamp: parseLocalDateTime(timestamp, timezoneOffset),
       notes: notes || '',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -150,7 +161,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, systolic, diastolic, bpm, readingType, timestamp, notes, walkDuration, maxBpmDuringWalk } = body;
+    const { id, systolic, diastolic, bpm, readingType, timestamp, notes, walkDuration, maxBpmDuringWalk, timezoneOffset } = body;
     
     console.log('PUT request received:', { id, userId, body });
 
@@ -199,16 +210,27 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
     }
 
-    // Parse datetime-local string as local time (not UTC)
-    const parseLocalDateTime = (dateTimeString: string): Date => {
+    // Parse datetime-local string using client timezone offset
+    const parseLocalDateTime = (dateTimeString: string, timezoneOffsetMinutes?: number): Date => {
       // datetime-local format: "YYYY-MM-DDTHH:MM"
-      // We need to treat this as local time, not UTC
+      // This represents the user's local time
       const [datePart, timePart] = dateTimeString.split('T');
       const [year, month, day] = datePart.split('-').map(Number);
       const [hours, minutes] = timePart.split(':').map(Number);
       
-      // Create date in local timezone
-      return new Date(year, month - 1, day, hours, minutes);
+      // Create date in user's local timezone
+      const localDate = new Date(year, month - 1, day, hours, minutes);
+      
+      // If we have timezone offset, adjust to UTC for storage
+      if (timezoneOffsetMinutes !== undefined) {
+        // timezoneOffset is in minutes, positive means behind UTC
+        // We need to subtract the offset to get UTC time
+        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        return new Date(utcTime);
+      }
+      
+      // Fallback: assume local time (for backward compatibility)
+      return localDate;
     };
 
     const updateData: Partial<BloodPressureReading> = {
@@ -216,7 +238,7 @@ export async function PUT(request: NextRequest) {
       diastolic: Number(diastolic),
       bpm: Number(bpm),
       readingType,
-      timestamp: parseLocalDateTime(timestamp),
+      timestamp: parseLocalDateTime(timestamp, timezoneOffset),
       notes: notes || '',
       updatedAt: new Date(),
     };

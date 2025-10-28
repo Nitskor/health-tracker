@@ -49,9 +49,11 @@ export default function BloodPressureForm({ onSuccess, onCancel, editingReading 
         throw new Error('Reading ID is missing');
       }
       
+      // Add timezone offset to help server parse datetime correctly
+      const timezoneOffset = new Date().getTimezoneOffset();
       const body = isEditing 
-        ? { id: editingReading._id, ...formData }
-        : formData;
+        ? { id: editingReading._id, ...formData, timezoneOffset }
+        : { ...formData, timezoneOffset };
 
       console.log('Submitting form:', { isEditing, body, editingReading });
 

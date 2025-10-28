@@ -66,6 +66,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Parse datetime-local string as local time (not UTC)
+    const parseLocalDateTime = (dateTimeString: string): Date => {
+      // datetime-local format: "YYYY-MM-DDTHH:MM"
+      // We need to treat this as local time, not UTC
+      const [datePart, timePart] = dateTimeString.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Create date in local timezone
+      return new Date(year, month - 1, day, hours, minutes);
+    };
+
     const client = await clientPromise;
     const db = client.db('health-tracker');
     const collection = db.collection('blood_sugar_readings');
@@ -74,7 +86,7 @@ export async function POST(request: NextRequest) {
       userId,
       glucose: Number(glucose),
       readingType,
-      timestamp: new Date(timestamp),
+      timestamp: parseLocalDateTime(timestamp),
       notes: notes || '',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -140,13 +152,25 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Parse datetime-local string as local time (not UTC)
+    const parseLocalDateTime = (dateTimeString: string): Date => {
+      // datetime-local format: "YYYY-MM-DDTHH:MM"
+      // We need to treat this as local time, not UTC
+      const [datePart, timePart] = dateTimeString.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Create date in local timezone
+      return new Date(year, month - 1, day, hours, minutes);
+    };
+
     const updateData: Record<string, Date | number | string> = {
       updatedAt: new Date(),
     };
 
     if (glucose !== undefined) updateData.glucose = Number(glucose);
     if (readingType) updateData.readingType = readingType;
-    if (timestamp) updateData.timestamp = new Date(timestamp);
+    if (timestamp) updateData.timestamp = parseLocalDateTime(timestamp);
     if (notes !== undefined) updateData.notes = notes;
 
     const result = await collection.updateOne(

@@ -28,13 +28,25 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Parse datetime-local string as local time (not UTC)
+    const parseLocalDateTime = (dateTimeString: string): Date => {
+      // datetime-local format: "YYYY-MM-DDTHH:MM"
+      // We need to treat this as local time, not UTC
+      const [datePart, timePart] = dateTimeString.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Create date in local timezone
+      return new Date(year, month - 1, day, hours, minutes);
+    };
+
     const db = await getDatabase();
     const collection = db.collection<WeightReading>('weight_readings');
 
     const reading: Omit<WeightReading, '_id'> = {
       userId,
       weight: Number(weight),
-      timestamp: new Date(timestamp),
+      timestamp: parseLocalDateTime(timestamp),
       notes: notes || '',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -126,9 +138,21 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Reading not found' }, { status: 404 });
     }
 
+    // Parse datetime-local string as local time (not UTC)
+    const parseLocalDateTime = (dateTimeString: string): Date => {
+      // datetime-local format: "YYYY-MM-DDTHH:MM"
+      // We need to treat this as local time, not UTC
+      const [datePart, timePart] = dateTimeString.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Create date in local timezone
+      return new Date(year, month - 1, day, hours, minutes);
+    };
+
     const updateData = {
       weight: Number(weight),
-      timestamp: new Date(timestamp),
+      timestamp: parseLocalDateTime(timestamp),
       notes: notes || '',
       updatedAt: new Date(),
     };

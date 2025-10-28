@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
       
       // If we have timezone offset, adjust to UTC for storage
       if (timezoneOffsetMinutes !== undefined) {
-        // timezoneOffset is in minutes, positive means behind UTC
-        // We need to subtract the offset to get UTC time
-        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        // timezoneOffset is in minutes, negative means ahead of UTC (like IST = -330)
+        // We need to add the offset to get UTC time (subtract the negative offset)
+        const utcTime = localDate.getTime() + (timezoneOffsetMinutes * 60 * 1000);
         return new Date(utcTime);
       }
       
@@ -223,9 +223,9 @@ export async function PUT(request: NextRequest) {
       
       // If we have timezone offset, adjust to UTC for storage
       if (timezoneOffsetMinutes !== undefined) {
-        // timezoneOffset is in minutes, positive means behind UTC
-        // We need to subtract the offset to get UTC time
-        const utcTime = localDate.getTime() - (timezoneOffsetMinutes * 60 * 1000);
+        // timezoneOffset is in minutes, negative means ahead of UTC (like IST = -330)
+        // We need to add the offset to get UTC time (subtract the negative offset)
+        const utcTime = localDate.getTime() + (timezoneOffsetMinutes * 60 * 1000);
         return new Date(utcTime);
       }
       
